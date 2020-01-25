@@ -16,6 +16,7 @@ type
     rules*: seq[Rule]
     current*: int
     line*: int
+    peeked: int
 
 proc isAtEnd*(lex: Lexer): bool =
   if lex.source.len == 0: return true
@@ -23,6 +24,11 @@ proc isAtEnd*(lex: Lexer): bool =
   if lex.tokens[lex.tokens.len-1].kind == TokenType.EOF: return true
 
 proc next*(lex: Lexer): Token =
+
+  if lex.peeked > 0:
+    lex.peeked = lex.peeked - 1
+    return lex.tokens[lex.tokens.len - 1 - lex.peeked]
+
   # for debugging:
   #   echo lex.current, " ", lex.source[lex.line].len
   #   echo lex.line, " ", lex.source.len
@@ -63,6 +69,20 @@ proc next*(lex: Lexer): Token =
   let value = lex.source[lex.line][lex.current .. lex.source[lex.line].len - 1]
   lex.current = lex.source[lex.line].len
   return Token(kind: TokenType.Unknown, line: lex.line, value: value)
+
+# calculates the next value but increments a "peeked" variable which keeps track of the offset from the end of the array
+proc peek*(lex: Lexer): Token =
+  echo "peeked"
+  let rtn = lex.next()
+  lex.peeked = lex.peeked + 1
+  return rtn
+
+# moves the head one step backwards by incrementing the offset from the end of the array
+# returns the token at the location of the head after going backwards
+proc prev*(lex: Lexer): Token =
+  echo "previoused"
+  lex.peeked = lex.peeked + 1
+  return lex.tokens[lex.tokens.len - 1 - lex.peeked]
 
 var rules = newSeq[Rule]()
 

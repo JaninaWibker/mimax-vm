@@ -58,9 +58,71 @@ proc parse*(input: string) =
           echo "error"
           state = ERROR
 
+      of ARGUMENTS:
+        if token.kind == TokenType.PERCENTAGE: # label
+          state = IDENTIFIER
+        elif token.kind == TokenType.LPARAN:
+          state = REGISTER
+        elif token.kind == TokenType.INTEGER:
+          # TODO: save the integer somehow
+          # TODO: check if more arguments are coming or a new instruction starts
+          token = lex.next()
+          echo "a ", token
+          if token.kind == TokenType.WS:
+            token = lex.peek()
+            echo "b ", token
+
+            if token.kind == TokenType.IDENTIFIER:
+              state = START
+              # not advancing, letting them deal with saving the identifier themselves
+            elif token.kind == TokenType.OPCODE:
+              state = OPCODE
+              # not advancing, letting them deal with saving the opcode themselves
+            elif token.kind == TokenType.PERCENTAGE:
+              state = IDENTIFIER
+              discard lex.next() # only peeked, advancing now
+            elif token.kind == TokenType.LPARAN:
+              state = REGISTER
+              discard lex.next() # only peeked, advancing now
+            else: # can basically only be integer
+              state = ARGUMENTS
+              # not advancing
+
+          else:
+            # error
+            echo "error, expected whitespace found something else"
+            state = ERROR
+          discard
+        
+        else:
+          state = START # going back a bit and jumping to start
+          discard lex.prev()
+
       of IDENTIFIER:
         if token.kind == TokenType.IDENTIFIER:
-          state = ARGUMENTS
+          # TODO: somehow save this identifier
+          # TODO: check if more arguments are coming or a new instruction starts 
+          token = lex.next()
+          echo "a ", token
+          if token.kind == TokenType.WS:
+            token = lex.peek()
+            echo "b ", token
+
+            if token.kind == TokenType.IDENTIFIER:
+              state = START
+              # not advancing, letting them deal with saving the identifier themselves
+            elif token.kind == TokenType.OPCODE:
+              state = OPCODE
+              # not advancing, letting them deal with saving the opcode themselves
+            elif token.kind == TokenType.PERCENTAGE:
+              state = IDENTIFIER
+              discard lex.next() # only peeked, advancing now
+            elif token.kind == TokenType.LPARAN:
+              state = REGISTER
+              discard lex.next() # only peeked, advancing now
+            else: # can basically only be integer
+              state = ARGUMENTS
+              # not advancing
         else:
           # error
           echo "error"
@@ -74,6 +136,35 @@ proc parse*(input: string) =
           echo "error"
           state = ERROR
 
+      of RPARAN:
+        if token.kind == TokenType.RPARAN:
+          # TODO: check if more arguments are coming or a new instruction starts 
+          token = lex.next()
+          echo "a ", token
+          if token.kind == TokenType.WS:
+            token = lex.peek()
+            echo "b ", token
+
+            if token.kind == TokenType.IDENTIFIER:
+              state = START
+              # not advancing, letting them deal with saving the identifier themselves
+            elif token.kind == TokenType.OPCODE:
+              state = OPCODE
+              # not advancing, letting them deal with saving the opcode themselves
+            elif token.kind == TokenType.PERCENTAGE:
+              state = IDENTIFIER
+              discard lex.next() # only peeked, advancing now
+            elif token.kind == TokenType.LPARAN:
+              state = REGISTER
+              discard lex.next() # only peeked, advancing now
+            else: # can basically only be integer
+              state = ARGUMENTS
+              # not advancing
+
+        else:
+          # error
+          echo "error"
+          state = ERROR
       
       of ERROR:
         echo "error in line ", lex.line, " at position ", lex.current 

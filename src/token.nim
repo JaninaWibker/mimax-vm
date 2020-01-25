@@ -64,4 +64,4 @@ type
     value*: string
 
 proc `$`*(token: Token): string =
-  return "kind: $1, value: \"$2\", line: $3" % [$token.kind, token.value, $token.line]
+  return "kind: $1, value: \"$2\", line: $3" % [$token.kind, token.value, $(token.line+1)]
