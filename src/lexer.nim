@@ -52,6 +52,12 @@ proc next*(lex: Lexer): Token =
       lex.tokens.add(token)
       return token
   
+  if lex.source[lex.line] == "":
+    let token = Token(kind: TokenType.WS, line: lex.line, value: "\n")
+    if lex.line != lex.source.len - 1: # if last line don't do anything, if not then go to next line
+      lex.line = lex.line + 1
+      lex.current = 0
+    return token
   # found something completely unknown, skipping to end of line and continuing
   # (not going to next line directly as this better going to be handled by the EOF/line logic)
   let value = lex.source[lex.line][lex.current .. lex.source[lex.line].len - 1]
@@ -60,10 +66,11 @@ proc next*(lex: Lexer): Token =
 
 var rules = newSeq[Rule]()
 
-rules.add(Rule(kind: TokenType.OPCODE,      max_length: 4, regex: re("LDC|LDV|STV|LDIV|STIV|ADD|AND|OR|XOR|NOT|RAR|EQL|JMP|JMN|HALT|CALL|RET|LDVR|STVR|LDSP|STSP|LDFP|STFP|LDRA|STRA|ADC", {reIgnoreCase})))
+# mneomonics are ordered by length, this circumvents the issue that STV and STVR, ... start the same which causes everything to match STV instead of STVR
+rules.add(Rule(kind: TokenType.OPCODE,      max_length: 4, regex: re("LDIV|STIV|HALT|CALL|LDVR|STVR|LDSP|STSP|LDFP|STFP|LDRA|STRA|LDC|LDV|STV|ADD|AND|XOR|NOT|RAR|EQL|JMP|JMN|RET|ADC|OR", {reIgnoreCase})))
 rules.add(Rule(kind: TokenType.REGISTER,    max_length: 3, regex: re("IR|RA|IAR|A|ONE|SP|FP|SAR|SDR|X|Y", {reIgnoreCase})))
 rules.add(Rule(kind: TokenType.INTEGER,     max_length: 0, regex: re("[+-]?(0x[0-9a-fA-F]+|0b[01]+|[0-9]+)", {reIgnoreCase})))
-rules.add(Rule(kind: TokenType.IDENTIFIER,  max_length: 0, regex: re("[a-zA-Z_][a-zA-Z_0-9]", {reIgnoreCase})))
+rules.add(Rule(kind: TokenType.IDENTIFIER,  max_length: 0, regex: re("[a-zA-Z_][a-zA-Z_0-9]+", {reIgnoreCase})))
 rules.add(Rule(kind: TokenType.WS,          max_length: 0, regex: re("(?:\t|\n|\r| |;.*|#.|--.*)+", {reIgnoreCase})))
 rules.add(Rule(kind: TokenType.COLON,       max_length: 1, regex: re(":", {reIgnoreCase})))
 rules.add(Rule(kind: TokenType.LPARAN,      max_length: 1, regex: re("\\(", {reIgnoreCase})))
@@ -73,3 +80,7 @@ rules.add(Rule(kind: TokenType.RPARAN,      max_length: 1, regex: re("\\)", {reI
 var lex*: Lexer
 
 lex = Lexer(rules: rules)
+
+
+
+
