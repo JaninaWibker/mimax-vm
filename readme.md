@@ -15,6 +15,24 @@ nimble build
 
 ## Mima-X
 
+### Example Code
+
+```assembly_x86
+push:   stvr 0 (sp)   ; this pushes the value of the accumulator to the stack
+        ldsp
+        adc 1
+        stsp
+        ret
+
+pop:    ldsp          ; this pops the top-most value of the stack
+        adc -1
+        stsp
+        ret
+
+top:    ldvr -1 (sp)  ; this loads teh top-most value of the stack into the accumulator
+        ret
+```
+
 ### Instructions
 
 Die Mima-X Instructions sind zum größtenteil einfach Mima Instructions, aber es gibt einige neue, die Mima vorher nicht hatte.
@@ -30,7 +48,7 @@ Alte Instructions:
 - OR: a = a | mem[arg]
 - XOR: a = a ^ mem[arg]
 - NOT: a = ~a
-- RAR: ...
+- RAR: a = a >> 1 (no zero-fill)
 - EQL: a = a == mem[arg] ? R1 : 0
 - JMP: iar = arg
 - JMN: iar = a == R1 ? mem[arg] : iar
@@ -59,3 +77,49 @@ Neue Instructions:
 - SDR: Storage Data Register
 - X: X Register (ALU)
 - Y: Y Register (ALU)
+
+### Opcode listing
+
+> Opcodes für alle Instructions die Argumente haben
+
+| opcode | mnemonic |
+| ------ | -------- |
+| `0x00` |   LDC    |
+| `0x01` |   LDV    |
+| `0x02` |   STV    |
+| `0x03` |   ADD    |
+| `0x04` |   AND    |
+| `0x05` |   OR     |
+| `0x06` |   XOR    |
+| `0x07` |   EQL    |
+| `0x08` |   JMP    |
+| `0x09` |   JMN    |
+| `0x0a` |   LDIV   |
+| `0x0b` |   STIV   |
+| `0x0c` |    ?     |
+| `0x0d` |    ?     |
+| `0x0e` |    -     |
+| `0x0f` | extended op code |
+
+Alle Instructions ohne Argumente teilen sich einen "*Prefix*" (`0x0f`). Der Prefix weißt also auf einen sogenannten "**extended OP-Code**" hin.
+
+> Opcodes für alle Instructions ohne Argumente (incl. Prefix)
+
+| opcode | mnemonic |
+| ------ | -------- |
+| `0xf0` |   HALT   |
+| `0xf1` |   NOT    |
+| `0xf2` |   RAR    |
+
+> Das sind alle "offiziellen" op codes die man finden kann, alle anderen Instructions haben keine angaben / gibt es in der "original version" nicht (welche soweit ich weiß von 2004 ist). Eine kleine Ausnahme davon ist eventuell `call`, was vorher unter dem Namen `JMS` (jump to subroutine) bekannt war. (*)
+
+Die fehlenden Opcodes sind:
+- CALL*
+- RET
+- LDVR
+- STVR
+- LDSP
+- STSP
+- ADC
+
+wobei `RET`, `LDSP` und `STSP` zu den extended op-codes gehören würden, da sie keine Argumente nehmen und `CALL`, `ADC` und alle Varianten von `LDVR` und `STVR` zu den normalen op codes gehören würden, was aber ein kleines Problem mit sich bringt: Es gibt nur 3 verbleibende Opcodes, also müsste man noch eine Kategorie an extended op-codes hinzufügen. Dafür würde sich eventuell `0x0e` anbieten.
