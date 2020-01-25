@@ -1,0 +1,13 @@
+push:   stvr 0 (sp)
+        ldsp
+        adc 1
+        stsp
+        ret
+
+pop:    ldsp
+        adc -1
+        stsp
+        ret
+
+top:    ldvr -1 (sp)
+        ret
