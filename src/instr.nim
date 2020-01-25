@@ -8,22 +8,22 @@ type
     REGISTER
 
 type
-  Arg = ref object
+  Arg* = ref object
     kind*: ArgType
     value*: string
 
 type
-  Instr = ref object
+  Instr* = ref object
     opcode: opcodes
     args: seq[Arg]
 
 type
-  Stmt = ref object
+  Stmt* = ref object
     label*: string
     instr: Instr   
 
 type
-  Prgm = ref object
+  Prgm* = ref object
     lines: seq[Stmt]
 
 proc `$`*(arg: Arg): string =

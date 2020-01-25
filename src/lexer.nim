@@ -1,5 +1,4 @@
 import re
-import strutils
 
 import token
 
@@ -18,12 +17,12 @@ type
     current*: int
     line*: int
 
-proc isAtEnd(lex: Lexer): bool =
+proc isAtEnd*(lex: Lexer): bool =
   if lex.source.len == 0: return true
   if lex.tokens.len == 0: return false
   if lex.tokens[lex.tokens.len-1].kind == TokenType.EOF: return true
 
-proc next(lex: Lexer): Token =
+proc next*(lex: Lexer): Token =
   # for debugging:
   #   echo lex.current, " ", lex.source[lex.line].len
   #   echo lex.line, " ", lex.source.len
@@ -71,9 +70,6 @@ rules.add(Rule(kind: TokenType.LPARAN,      max_length: 1, regex: re("\\(", {reI
 rules.add(Rule(kind: TokenType.RPARAN,      max_length: 1, regex: re("\\)", {reIgnoreCase})))
 
 # just some testing
-var lexer = Lexer(source: splitLines("ldc 0x2f: ; 123"))
+var lex*: Lexer
 
-lexer.rules = rules
-
-while not isAtEnd(lexer):
-  echo lexer.next()
+lex = Lexer(rules: rules)

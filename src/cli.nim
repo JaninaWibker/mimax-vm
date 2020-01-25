@@ -2,12 +2,12 @@ import os
 import strutils
 
 type
-  Options = object # ref object?
-    bin: bool
-    compile: bool
-    debug: bool
-    disassemble: bool
-    filepath: string
+  Options* = object
+    bin*: bool
+    compile*: bool
+    debug*: bool
+    disassemble*: bool
+    filepath*: string
 
 const version = "0.0.1"
 const usage = """
@@ -21,7 +21,7 @@ flags:
   -D, --disassemble   Disassemble binary representation
 """
 
-proc parseOptions(): Options =
+proc parseOptions*(): Options =
 
 
   let count = paramCount()
@@ -70,5 +70,3 @@ proc parseOptions(): Options =
         continue
 
   return options
-  
-echo parseOptions()
