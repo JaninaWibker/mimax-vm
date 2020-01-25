@@ -1,6 +1,6 @@
 # mimax-vm
 
-> Not started working on this project, this is just a readme file for now.
+> **WIP**: Not anywhere near completion. Work hasn't even started on most things.
 
 Dies ist ein VM für die "mima-x" Architektur aus der GBI Vorlesung.
 

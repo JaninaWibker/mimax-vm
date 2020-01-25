@@ -70,6 +70,7 @@ rules.add(Rule(kind: TokenType.COLON,       max_length: 1, regex: re(":", {reIgn
 rules.add(Rule(kind: TokenType.LPARAN,      max_length: 1, regex: re("\\(", {reIgnoreCase})))
 rules.add(Rule(kind: TokenType.RPARAN,      max_length: 1, regex: re("\\)", {reIgnoreCase})))
 
+# just some testing
 var lexer = Lexer(source: splitLines("ldc 0x2f: "))
 
 lexer.rules = rules
