@@ -57,8 +57,8 @@ Alte Instructions:
 Neue Instructions:
 - CALL: ra = iar; iar = arg
 - RET: iar = ra
-- LDVR: a = mem[reg + arg] (Syntax: `LDVR <arg> (<reg>)`)
-- STVR: mem[reg + arg] = a (Syntax: `STVR <arg> (<reg>)`)
+- LDVR: a = mem[memp[reg] + arg] (Syntax: `LDVR <arg> (<reg>)`)
+- STVR: mem[mem[reg] + arg] = a (Syntax: `STVR <arg> (<reg>)`)
 - LDSP: a = sp
 - STSP: sp = a
 - ADC: a = a + arg
