@@ -53,6 +53,7 @@ type
     COLON
     LPARAN
     RPARAN
+    PERCENTAGE
     EOF
     UNKNOWN
 

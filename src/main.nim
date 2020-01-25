@@ -1,10 +1,10 @@
-import strutils
-
 import cli
 import utils
-import lexer
+import parser
 
 var options = parseOptions()
+
+echo options
 
 if options.bin:
   # let stream = utils.read_binary_file(options.filepath)
@@ -23,9 +23,4 @@ elif options.disassemble:
 else:
   let str = utils.read_text_file(options.filepath)
 
-  lex.source = splitLines(str)
-  while not isAtEnd(lex):
-    echo lex.next()
-
-
-echo options
+  parser.parse(str)

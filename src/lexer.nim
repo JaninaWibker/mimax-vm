@@ -75,12 +75,9 @@ rules.add(Rule(kind: TokenType.WS,          max_length: 0, regex: re("(?:\t|\n|\
 rules.add(Rule(kind: TokenType.COLON,       max_length: 1, regex: re(":", {reIgnoreCase})))
 rules.add(Rule(kind: TokenType.LPARAN,      max_length: 1, regex: re("\\(", {reIgnoreCase})))
 rules.add(Rule(kind: TokenType.RPARAN,      max_length: 1, regex: re("\\)", {reIgnoreCase})))
+rules.add(Rule(kind: TokenType.PERCENTAGE,  max_length: 1, regex: re("%", {reIgnoreCase})))
 
 # just some testing
 var lex*: Lexer
 
 lex = Lexer(rules: rules)
-
-
-
-

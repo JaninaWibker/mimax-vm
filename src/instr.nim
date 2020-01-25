@@ -3,7 +3,7 @@ import token
 
 type
   ArgType* = enum
-    NUMBER
+    INTEGER
     LABEL
     REGISTER
 

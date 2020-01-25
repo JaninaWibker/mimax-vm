@@ -18,6 +18,9 @@ nimble build
 ### Example Code
 
 ```assembly_x86
+        ldc 7
+        call %push
+        
 push:   stvr 0 (sp)   ; this pushes the value of the accumulator to the stack
         ldsp
         adc 1
