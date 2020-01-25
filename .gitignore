@@ -1,2 +1,4 @@
 cli
 lexer
+parser
+main
