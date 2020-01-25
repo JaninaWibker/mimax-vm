@@ -6,6 +6,13 @@ Dies ist ein VM für die "mima-x" Architektur aus der GBI Vorlesung.
 
 Die VM ist in [Nim](https://nim-lang.org) geschrieben, nicht in JavaScript wie ihr [Vorgänger](https://git.jannik.ml/mima-vm). Da Nim sowohl, C/C++ als auch JavaScript als compile target hat kann man leicht verschiedene frontends für die VM bauen. Es wird eine Webversion geben, welche einem erlaubt Assembly einzugeben und dieses auszuführen und dabei den State der VM zu debuggen. Diese Features sollten auch mit der Native-compilten Version funktionieren mit etwas Gluecode.
 
+## Building
+
+```sh
+nimble build
+./mimax-vm
+```
+
 ## Mima-X
 
 ### Instructions
@@ -32,14 +39,10 @@ Alte Instructions:
 Neue Instructions:
 - CALL: ra = iar; iar = arg
 - RET: iar = ra
-- LDVR: a = mem[sp + arg]
-- STVR: mem[sp + arg] = a
+- LDVR: a = mem[reg + arg] (Syntax: `LDVR <arg> (<reg>)`)
+- STVR: mem[reg + arg] = a (Syntax: `STVR <arg> (<reg>)`)
 - LDSP: a = sp
 - STSP: sp = a
-- LDFP: a = mem[fp]
-- STFP: mem[fp] = a
-- LDRA: a = mem[ra]
-- STRA: mem[ra] = a
 - ADC: a = a + arg
 
 
