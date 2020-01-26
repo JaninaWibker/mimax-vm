@@ -16,7 +16,7 @@ type
     RPARAN
     ERROR
 
-proc parse*(input: string) =
+proc parse*(input: string): Prgm =
   lex.source = splitLines(input)
 
   var state = START
@@ -167,4 +167,14 @@ proc parse*(input: string) =
           state = ERROR
       
       of ERROR:
-        echo "error in line ", lex.line, " at position ", lex.current 
+        echo "error in line ", lex.line, " at position ", lex.current
+
+  return program;
+
+#[
+  TODO:
+    - save values to some kind of "ast"
+    - maybe allow opcode folled by argument without whitespace (the only way
+      this could work is with non-integer arguments like "%label" or "(register)")
+    - return the "ast"
+]#

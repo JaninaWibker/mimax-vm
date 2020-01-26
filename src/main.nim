@@ -7,7 +7,7 @@ var options = parseOptions()
 echo options
 
 if options.bin:
-  # let stream = utils.read_binary_file(options.filepath)
+  let stream = utils.read_binary_file(options.filepath)
   echo "not yet supported"
   quit(1)
 elif options.compile:
@@ -23,4 +23,4 @@ elif options.disassemble:
 else:
   let str = utils.read_text_file(options.filepath)
 
-  parser.parse(str)
+  discard parser.parse(str)

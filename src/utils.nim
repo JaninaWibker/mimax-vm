@@ -9,16 +9,27 @@ proc read_binary_file*(filepath: string): FileStream =
   defer: stream.close()
 
   # check if mima file 
-  var mima_header: array[4, char]
-  discard stream.readData(mima_header.addr, 4)
+  var mima_header_start: array[4, char]
+  var mima_header_end:   array[2, char]
 
-  doAssert mima_header == ['m', 'i', 'm', 'a'], "This is not a mima binary file"
+  discard stream.readData(mima_header_start.addr, 4)
+  discard stream.readData(mima_header_end.addr, 2)
 
-  # check if mima-x file
-  var mima_version_header: array[1, char]
-  discard stream.readData(mima_version_header.addr, 1)
-
-  doAssert mima_version_header == ['x'], "This is not a mima x binary file (but a mima binary file)"
+  if mima_header_start == ['m', 'i', 'm', 'a']:
+    # little endian system
+    if mima_header_end == ['x', '\0']:
+      echo "little endian system"
+    else:
+      raise newException(IOError, "This is not a mimax binary file")
+    discard
+  elif mima_header_start == ['i', 'm', 'a', 'm']:
+    # big endian system
+    if mima_header_end == ['\0', 'x']:
+      echo "big endian system"
+    else:
+      raise newException(IOError, "This is not a mimax binary file")
+  else:
+    raise newException(IOError, "This is not a mima binary file")
 
   return stream
 
