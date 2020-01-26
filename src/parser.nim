@@ -21,21 +21,23 @@ proc parse*(input: string): Prgm =
 
   var state = START
   var program = Prgm()
+  var c_stmt: Stmt
+  var c_instr: Instr
 
   while not isAtEnd(lex):
-    echo "state: ", $state
 
     var token = lex.next()
-    echo token
 
     if token.kind == TokenType.WS: continue
 
     case state
       of START:
+        c_stmt = Stmt()
         if token.kind == TokenType.IDENTIFIER:
+          c_stmt.label = token.value
           state = COLON
         elif token.kind == TokenType.OPCODE:
-          # TODO: save this opcode somehow
+          c_instr = Instr(opcode: parseEnum[opcodes](token.value))
           state = ARGUMENTS
         else:
           # error
@@ -52,6 +54,7 @@ proc parse*(input: string): Prgm =
 
       of OPCODE:
         if token.kind == TokenType.OPCODE:
+          c_instr = Instr(opcode: parseEnum[opcodes](token.value))
           state = ARGUMENTS
         else:
           # error
@@ -64,18 +67,22 @@ proc parse*(input: string): Prgm =
         elif token.kind == TokenType.LPARAN:
           state = REGISTER
         elif token.kind == TokenType.INTEGER:
-          # TODO: save the integer somehow
-          # TODO: check if more arguments are coming or a new instruction starts
+          c_instr.args.add(Arg(kind: ArgType.INTEGER, value: token.value))
+          # check if more arguments are coming or a new instruction starts
           token = lex.next()
-          echo "a ", token
           if token.kind == TokenType.WS:
             token = lex.peek()
-            echo "b ", token
 
             if token.kind == TokenType.IDENTIFIER:
+              # save the current instruction and current statement
+              c_stmt.instr = c_instr
+              program.lines.add(deep_copy(c_stmt)) # deep copying because c_stmt is reused
               state = START
               # not advancing, letting them deal with saving the identifier themselves
             elif token.kind == TokenType.OPCODE:
+              # save the current instruction and current statement
+              c_stmt.instr = c_instr
+              program.lines.add(deep_copy(c_stmt)) # deep copying because c_stmt is reused
               state = OPCODE
               # not advancing, letting them deal with saving the opcode themselves
             elif token.kind == TokenType.PERCENTAGE:
@@ -95,23 +102,30 @@ proc parse*(input: string): Prgm =
           discard
         
         else:
+          # save the current instruction and current statement
+          c_stmt.instr = c_instr
+          program.lines.add(deep_copy(c_stmt))
           state = START # going back a bit and jumping to start
           discard lex.prev()
 
       of IDENTIFIER:
-        if token.kind == TokenType.IDENTIFIER:
-          # TODO: somehow save this identifier
-          # TODO: check if more arguments are coming or a new instruction starts 
+        if token.kind == TokenType.IDENTIFIER: 
+          c_instr.args.add(Arg(kind: ArgType.LABEL, value: token.value))
+          # check if more arguments are coming or a new instruction starts
           token = lex.next()
-          echo "a ", token
           if token.kind == TokenType.WS:
             token = lex.peek()
-            echo "b ", token
 
             if token.kind == TokenType.IDENTIFIER:
+              # save the current instruction and current statement
+              c_stmt.instr = c_instr
+              program.lines.add(deep_copy(c_stmt)) # deep copying because c_stmt is reused
               state = START
               # not advancing, letting them deal with saving the identifier themselves
             elif token.kind == TokenType.OPCODE:
+              # save the current instruction and current statement
+              c_stmt.instr = c_instr
+              program.lines.add(deep_copy(c_stmt)) # deep copying because c_stmt is reused
               state = OPCODE
               # not advancing, letting them deal with saving the opcode themselves
             elif token.kind == TokenType.PERCENTAGE:
@@ -130,6 +144,7 @@ proc parse*(input: string): Prgm =
 
       of REGISTER:
         if token.kind == TokenType.REGISTER:
+          c_instr.args.add(Arg(kind: ArgType.REGISTER, value: token.value))
           state = RPARAN
         else:
           # error
@@ -138,17 +153,21 @@ proc parse*(input: string): Prgm =
 
       of RPARAN:
         if token.kind == TokenType.RPARAN:
-          # TODO: check if more arguments are coming or a new instruction starts 
+          # check if more arguments are coming or a new instruction starts 
           token = lex.next()
-          echo "a ", token
           if token.kind == TokenType.WS:
             token = lex.peek()
-            echo "b ", token
 
             if token.kind == TokenType.IDENTIFIER:
+              # save the current instruction and current statement
+              c_stmt.instr = c_instr
+              program.lines.add(deep_copy(c_stmt)) # deep copying because c_stmt is reused
               state = START
               # not advancing, letting them deal with saving the identifier themselves
             elif token.kind == TokenType.OPCODE:
+              # save the current instruction and current statement
+              c_stmt.instr = c_instr
+              program.lines.add(deep_copy(c_stmt)) # deep copying because c_stmt is reused
               state = OPCODE
               # not advancing, letting them deal with saving the opcode themselves
             elif token.kind == TokenType.PERCENTAGE:
@@ -167,6 +186,9 @@ proc parse*(input: string): Prgm =
           state = ERROR
       
       of ERROR:
+        # flushing current stmt and instr
+        c_instr = nil;
+        c_stmt = nil;
         echo "error in line ", lex.line, " at position ", lex.current
 
   return program;

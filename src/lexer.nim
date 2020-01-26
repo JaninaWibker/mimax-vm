@@ -72,7 +72,7 @@ proc next*(lex: Lexer): Token =
 
 # calculates the next value but increments a "peeked" variable which keeps track of the offset from the end of the array
 proc peek*(lex: Lexer): Token =
-  echo "peeked"
+  # echo "peeked"
   let rtn = lex.next()
   lex.peeked = lex.peeked + 1
   return rtn
@@ -80,7 +80,7 @@ proc peek*(lex: Lexer): Token =
 # moves the head one step backwards by incrementing the offset from the end of the array
 # returns the token at the location of the head after going backwards
 proc prev*(lex: Lexer): Token =
-  echo "previoused"
+  # echo "previoused"
   lex.peeked = lex.peeked + 1
   return lex.tokens[lex.tokens.len - 1 - lex.peeked]
 

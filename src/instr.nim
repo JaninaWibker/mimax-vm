@@ -14,20 +14,23 @@ type
 
 type
   Instr* = ref object
-    opcode: opcodes
-    args: seq[Arg]
+    opcode*: opcodes
+    args*: seq[Arg]
 
 type
   Stmt* = ref object
     label*: string
-    instr: Instr   
+    instr*: Instr   
 
 type
   Prgm* = ref object
-    lines: seq[Stmt]
+    lines*: seq[Stmt]
 
 proc `$`*(arg: Arg): string =
-  return "kind: $1, value: \"$2\"" % [$arg.kind, arg.value]
+  case arg.kind:
+    of INTEGER:   return arg.value
+    of LABEL:     return "%" & arg.value
+    of REGISTER:  return "(" & arg.value & ")"
 
 proc `$`*(instr: Instr): string =
   var str = $instr.opcode
@@ -36,7 +39,10 @@ proc `$`*(instr: Instr): string =
   return str
 
 proc `$`*(stmt: Stmt): string =
-  return "$1:\t$2" % [stmt.label, $stmt.instr]
+  if stmt.label.len != 0:
+    return "$1:\t$2" % [stmt.label, $stmt.instr]
+  else:
+    return "\t$1" % [$stmt.instr]
 
 proc `$`*(prgm: Prgm): string =
   var str = ""

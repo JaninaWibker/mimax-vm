@@ -1,6 +1,7 @@
 import cli
 import utils
 import parser
+import instr
 
 var options = parseOptions()
 
@@ -23,4 +24,5 @@ elif options.disassemble:
 else:
   let str = utils.read_text_file(options.filepath)
 
-  discard parser.parse(str)
+  var program = parser.parse(str)
+  echo program
