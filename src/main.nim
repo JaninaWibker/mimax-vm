@@ -8,7 +8,7 @@ var options = parseOptions()
 echo options
 
 if options.bin:
-  let stream = utils.read_binary_file(options.filepath)
+  let stream = utils.read_binary_file(options.filepath, options.mima_version)
   echo "not yet supported"
   quit(1)
 elif options.compile:

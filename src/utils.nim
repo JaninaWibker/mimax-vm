@@ -1,7 +1,8 @@
 import streams
 import os
+import cli # TODO: create some kind of better system than just including everything everwhere; similar to header files?
 
-proc read_binary_file*(filepath: string): FileStream = 
+proc read_binary_file*(filepath: string, version: mima_version): FileStream = 
   if unlikely(not existsFile(filepath)):
     raise newException(IOError, "file \"{filepath}\" does not exist")
   
@@ -17,8 +18,12 @@ proc read_binary_file*(filepath: string): FileStream =
 
   if mima_header_start == ['m', 'i', 'm', 'a']:
     # little endian system
-    if mima_header_end == ['x', '\0']:
+    if version == mima_version.MIMAX and mima_header_end == ['x', '\0']:
       echo "little endian system"
+    elif version == mima_version.MIMA:
+      discard # TODO: what to do here?
+    elif version == mima_Version.MIMA_ALT:
+      discard # TODO: what to do here?
     else:
       raise newException(IOError, "This is not a mimax binary file")
     discard

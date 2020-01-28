@@ -15,15 +15,17 @@ nimble build
 
 ## Benutzung
 
-**usage**: `mimax-vm <optional flags> <file>`
-
-**flags**:
 ```
+usage: mimax-vm <optional flags> <file>
+
+flags:
   -b, --bin           Use binary representation as input
   -c, --compile       Compile to binary representation
   -v, --version       Print version
   -d, --debug         Enable debugging features (breakpoints, stepping through code, ...)
   -D, --disassemble   Disassemble binary representation
+  -X, --mima          Original mima instruction set
+  -A, --alt-mima      Use slightly different mima instruction set
 ```
 
 ## Mima-X

@@ -40,7 +40,6 @@ proc parse*(input: string): Prgm =
           c_instr = Instr(opcode: parseEnum[opcodes](token.value))
           state = ARGUMENTS
         else:
-          # error
           echo "error"
           state = ERROR
 
@@ -48,7 +47,6 @@ proc parse*(input: string): Prgm =
         if token.kind == TokenType.COLON:
           state = OPCODE
         else:
-          # error
           echo "error"
           state = ERROR
 
@@ -57,7 +55,6 @@ proc parse*(input: string): Prgm =
           c_instr = Instr(opcode: parseEnum[opcodes](token.value))
           state = ARGUMENTS
         else:
-          # error
           echo "error"
           state = ERROR
 
@@ -96,7 +93,6 @@ proc parse*(input: string): Prgm =
               # not advancing
 
           else:
-            # error
             echo "error, expected whitespace found something else"
             state = ERROR
           discard
@@ -138,7 +134,6 @@ proc parse*(input: string): Prgm =
               state = ARGUMENTS
               # not advancing
         else:
-          # error
           echo "error"
           state = ERROR
 
@@ -147,7 +142,6 @@ proc parse*(input: string): Prgm =
           c_instr.args.add(Arg(kind: ArgType.REGISTER, value: token.value))
           state = RPARAN
         else:
-          # error
           echo "error"
           state = ERROR
 
@@ -181,7 +175,6 @@ proc parse*(input: string): Prgm =
               # not advancing
 
         else:
-          # error
           echo "error"
           state = ERROR
       
@@ -193,10 +186,25 @@ proc parse*(input: string): Prgm =
 
   return program;
 
+
+# TODO: maybe allow opcode followed by argument without whitespace (the only way
+# TODO: this could work is with non-integer arguments like "%label" or "(register)") 
+
+
 #[
-  TODO:
-    - save values to some kind of "ast"
-    - maybe allow opcode folled by argument without whitespace (the only way
-      this could work is with non-integer arguments like "%label" or "(register)")
-    - return the "ast"
+  The idea behind this giant procedure is to be sort of like a recursive descent parser,
+  but since the grammar is so easy just do everything in place in one giant switch
+  (or rather case because that's the name in nim) statement which switches over different
+  states, each state corresponding to what should be parsed next or how it is conventionally
+  done another procedure which tries to parse the expected into an AST of it's own to be later
+  combined with other parts into another AST, ... till a whole AST of the whole program exists.
+  
+  The grammar that this giant case statement is parsing is the following:
+  
+    start       -> ((label:)? instruction)*
+    instruction -> opcode arg*
+    opcode      -> OPCODE_KEYWORD
+    arg         -> (label|INTEGER|\(REGISTER\)|<fehlt hier noch etwas?>)
+    label       -> IDENTIFIER
+  
 ]#
