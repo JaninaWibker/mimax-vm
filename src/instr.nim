@@ -63,8 +63,7 @@ proc bin_repr*(instr: Instr, labels: Table[string, uint]): array[3, uint8] =
        opcodes.LDIV, opcodes.STIV, opcodes.ADC:
       let num = parseInt(instr.args[0].value)
       bin[0] = cast[uint8](ord(instr.opcode)) # this only sets the upper 4 bits as the lower 4 bits are always 0
-
-      bin[0] += bitand(cast[uint8](num shr 16), 0x7f)
+      bin[0] += bitand(cast[uint8](num shr 16), 0x0f)
       bin[1] = cast[uint8](num shr 8)
       bin[2] = cast[uint8](num)
 
@@ -73,7 +72,7 @@ proc bin_repr*(instr: Instr, labels: Table[string, uint]): array[3, uint8] =
       
       bin[0] = cast[uint8](ord(instr.opcode)) # this only sets the upper 4 bits as the lower 4 bits are always 0
       let label: uint = labels[instr.args[0].value]
-      bin[0] += bitand(cast[uint8](label shr 16), 0x7f)
+      bin[0] += bitand(cast[uint8](label shr 16), 0x0f)
       bin[1] = cast[uint8](label shr 8)
       bin[2] = cast[uint8](label)
 
@@ -96,3 +95,7 @@ proc bin_repr*(instr: Instr, labels: Table[string, uint]): array[3, uint8] =
       echo "error, invalid instruction"
     
   return bin
+
+proc text_repr*(instr: array[3, uint8]): Instr =
+  var rtn = Instr()
+  return rtn

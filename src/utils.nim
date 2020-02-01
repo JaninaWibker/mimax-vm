@@ -7,7 +7,6 @@ proc read_binary_file*(filepath: string, version: mima_version): FileStream =
     raise newException(IOError, "file \"{filepath}\" does not exist")
   
   let stream = newFileStream(filepath, mode = fmRead)
-  defer: stream.close()
 
   # check if mima file 
   var mima_header_start: array[4, char]

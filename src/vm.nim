@@ -6,7 +6,7 @@ import token
 # https://forum.nim-lang.org/t/2626
 type
   VMState* = ref object
-    buf: seq[array[3, uint8]]
+    buf*: seq[array[3, uint8]]
     ir*: array[3, uint8]
     ra*: uint
     iar*: uint
@@ -152,4 +152,6 @@ proc execute*(state: VMState): bool =
           echo "error extended-opcodes-1"
     else:
       echo "error"
+
+  echo "A:", state.a, " SP: ", state.sp, " IAR: ", state.iar
   return true
