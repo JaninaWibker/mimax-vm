@@ -19,6 +19,8 @@ type
 proc parse*(input: string): Prgm =
   lex.source = splitLines(input)
 
+  var lines: uint = 0
+
   var state = START
   var program = Prgm()
   var c_stmt: Stmt
@@ -73,12 +75,16 @@ proc parse*(input: string): Prgm =
             if token.kind == TokenType.IDENTIFIER:
               # save the current instruction and current statement
               c_stmt.instr = c_instr
+              c_stmt.line = lines
+              lines += 1
               program.lines.add(deep_copy(c_stmt)) # deep copying because c_stmt is reused
               state = START
               # not advancing, letting them deal with saving the identifier themselves
             elif token.kind == TokenType.OPCODE:
               # save the current instruction and current statement
               c_stmt.instr = c_instr
+              c_stmt.line = lines
+              lines += 1
               program.lines.add(deep_copy(c_stmt)) # deep copying because c_stmt is reused
               state = OPCODE
               # not advancing, letting them deal with saving the opcode themselves
@@ -100,6 +106,8 @@ proc parse*(input: string): Prgm =
         else:
           # save the current instruction and current statement
           c_stmt.instr = c_instr
+          c_stmt.line = lines
+          lines += 1
           program.lines.add(deep_copy(c_stmt))
           state = START # going back a bit and jumping to start
           discard lex.prev()
@@ -115,13 +123,17 @@ proc parse*(input: string): Prgm =
             if token.kind == TokenType.IDENTIFIER:
               # save the current instruction and current statement
               c_stmt.instr = c_instr
+              c_stmt.line = lines
               program.lines.add(deep_copy(c_stmt)) # deep copying because c_stmt is reused
+              lines += 1
               state = START
               # not advancing, letting them deal with saving the identifier themselves
             elif token.kind == TokenType.OPCODE:
               # save the current instruction and current statement
               c_stmt.instr = c_instr
+              c_stmt.line = lines
               program.lines.add(deep_copy(c_stmt)) # deep copying because c_stmt is reused
+              lines += 1
               state = OPCODE
               # not advancing, letting them deal with saving the opcode themselves
             elif token.kind == TokenType.PERCENTAGE:
@@ -155,13 +167,17 @@ proc parse*(input: string): Prgm =
             if token.kind == TokenType.IDENTIFIER:
               # save the current instruction and current statement
               c_stmt.instr = c_instr
+              c_stmt.line = lines
               program.lines.add(deep_copy(c_stmt)) # deep copying because c_stmt is reused
+              lines += 1
               state = START
               # not advancing, letting them deal with saving the identifier themselves
             elif token.kind == TokenType.OPCODE:
               # save the current instruction and current statement
               c_stmt.instr = c_instr
+              c_stmt.line = lines
               program.lines.add(deep_copy(c_stmt)) # deep copying because c_stmt is reused
+              lines += 1
               state = OPCODE
               # not advancing, letting them deal with saving the opcode themselves
             elif token.kind == TokenType.PERCENTAGE:
