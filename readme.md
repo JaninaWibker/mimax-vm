@@ -155,7 +155,8 @@ Alle Instructions ohne Argumente teilen sich einen "*Präfix*" (`0x0f`). Der Pr�
 
 > Opcodes für alle Varianten von `LDVR` und `STVR`
 
-| opcode |  mnemonic   |
+| opcode | mnemonic    |
+| ------ | ----------- |
 | `0xe0` |  *LDVR*\*   |
 | `0xe1` |     -       |
 | `0xe2` |     -       |
