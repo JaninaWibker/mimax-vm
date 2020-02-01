@@ -1,4 +1,5 @@
 import streams
+import strutils
 
 import cli
 import utils
@@ -28,7 +29,7 @@ proc disassemble(stream: FileStream): string =
     if i == 0:
       rtn &= $text_repr(instr) & '\n'
 
-  return rtn
+  return rtn.strip()
 
 if options.bin:
   let stream = utils.read_binary_file(options.filepath, options.mima_version)

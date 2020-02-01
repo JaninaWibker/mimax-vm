@@ -98,4 +98,62 @@ proc bin_repr*(instr: Instr, labels: Table[string, uint]): array[3, uint8] =
 
 proc text_repr*(instr: array[3, uint8]): Instr =
   var rtn = Instr()
+  # echo instr
+  case bitand(instr[0], 0xf0):
+    of ord(opcodes.LDVR):
+
+      var value = cast[int](cast[uint](instr[1]) shl 8 + cast[uint](instr[2]))
+
+      const modulo = 1 shl 16
+      const max_value = (1 shl 15) - 1
+
+      if value > max_value: value -= modulo
+
+      rtn.args.add(Arg(kind: ArgType.INTEGER, value: $value))
+      case instr[0]:
+        of ord(opcodes.LDVR_FP):
+          rtn.args.add(Arg(kind: ArgType.REGISTER, value: $registers.FP))
+          rtn.opcode = opcodes.LDVR
+        of ord(opcodes.LDVR_RA):
+          rtn.args.add(Arg(kind: ArgType.REGISTER, value: $registers.RA))
+          rtn.opcode = opcodes.LDVR
+        of ord(opcodes.LDVR_SP):
+          rtn.args.add(Arg(kind: ArgType.REGISTER, value: $registers.SP))
+          rtn.opcode = opcodes.LDVR
+        of ord(opcodes.STVR_FP):
+          rtn.args.add(Arg(kind: ArgType.REGISTER, value: $registers.FP))
+          rtn.opcode = opcodes.STVR
+        of ord(opcodes.STVR_RA):
+          rtn.args.add(Arg(kind: ArgType.REGISTER, value: $registers.RA))
+          rtn.opcode = opcodes.STVR
+        of ord(opcodes.STVR_SP):
+          rtn.args.add(Arg(kind: ArgType.REGISTER, value: $registers.SP))
+          rtn.opcode = opcodes.STVR
+        else:
+          echo "error extended-opcodes-2"
+    of ord(opcodes.HALT):
+      case instr[0]:
+        of ord(opcodes.HALT): rtn.opcode = opcodes.HALT
+        of ord(opcodes.NOT):  rtn.opcode = opcodes.NOT
+        of ord(opcodes.RAR):  rtn.opcode = opcodes.RAR
+        of ord(opcodes.RET):  rtn.opcode = opcodes.RET
+        of ord(opcodes.LDSP): rtn.opcode = opcodes.LDSP
+        of ord(opcodes.STSP): rtn.opcode = opcodes.STSP
+        of ord(opcodes.LDFP): rtn.opcode = opcodes.LDFP
+        of ord(opcodes.STFP): rtn.opcode = opcodes.STFP
+        of ord(opcodes.LDRA): rtn.opcode = opcodes.LDRA
+        of ord(opcodes.STRA): rtn.opcode = opcodes.STRA
+        else:
+          echo "error extended-opcodes-1"
+    else:
+      rtn.opcode = opcodes(bitand(instr[0], 0xf0))
+
+      var value = cast[int]((cast[uint](bitand(instr[0], 0x0f)) shl 16) + (cast[uint](instr[1]) shl 8) + (instr[2]))
+
+      const modulo = 1 shl 20
+      const max_value = (1 shl 19) - 1
+
+      if value > max_value: value -= modulo
+
+      rtn.args.add(Arg(kind: ArgType.INTEGER, value: $value))
   return rtn

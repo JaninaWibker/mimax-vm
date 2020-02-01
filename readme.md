@@ -1,6 +1,6 @@
 # mimax-vm
 
-> **WIP**: Not anywhere near completion. Work hasn't even started on most things.
+> **WIP**: Not anywhere near completion.
 
 Dies ist ein VM für die "mima-x" Architektur aus der GBI Vorlesung.
 
