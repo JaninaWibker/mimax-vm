@@ -36,6 +36,7 @@ Programme können entweder als Binärdatei oder als Textdatei ausgeführt werden
 ```x86
         ldc 7
         call %push
+        halt
         
 push:   stvr 0 (sp)   ; this pushes the value of the accumulator to the stack
         ldsp
@@ -129,30 +130,49 @@ Neue Instructions:
 | `0x09` |   JMN    |
 | `0x0a` |   LDIV   |
 | `0x0b` |   STIV   |
-| `0x0c` |    ?     |
-| `0x0d` |    ?     |
-| `0x0e` |    -     |
-| `0x0f` | extended op code |
+| `0x0c` |  *CALL*  |
+| `0x0d` |  *ADC*   |
+| `0x0e` | *extended opcodes 2* |
+| `0x0f` | extended opcodes 1 |
 
-Alle Instructions ohne Argumente teilen sich einen "*Prefix*" (`0x0f`). Der Prefix weißt also auf einen sogenannten "**extended OP-Code**" hin.
+Alle Instructions ohne Argumente teilen sich einen "*Präfix*" (`0x0f`). Der Präfix weißt also auf einen sogenannten "**extended OP-Code**" hin. Zudem gibt es noch die Instructions mit dem Präfix `0x0e`, welche die verschiedenen Versionen von `LDVR` und `STVR` sind
 
-> Opcodes für alle Instructions ohne Argumente (incl. Prefix)
+> Opcodes für alle Instructions ohne Argumente (incl. Präfix)
 
 | opcode | mnemonic |
 | ------ | -------- |
 | `0xf0` |   HALT   |
 | `0xf1` |   NOT    |
 | `0xf2` |   RAR    |
+| `0xf3` |   RET    |
+| `0xf4` |  *LDSP*  |
+| `0xf5` |  *STSP*  |
+| `0xf6` |  *LDFP*  |
+| `0xf7` |  *STFP*  |
+| `0xf8` |  *LDRA*  |
+| `0xf9` |  *STRA*  |
+|  ...   |    -     |
 
-> Das sind alle "offiziellen" op codes die man finden kann, alle anderen Instructions haben keine angaben / gibt es in der "original version" nicht (welche soweit ich weiß von 2004 ist). Eine kleine Ausnahme davon ist eventuell `call`, was vorher unter dem Namen `JMS` (jump to subroutine) bekannt war. (*)
+> Opcodes für alle Varianten von `LDVR` und `STVR`
 
-Die fehlenden Opcodes sind:
-- CALL*
-- RET
-- LDVR
-- STVR
-- LDSP
-- STSP
-- ADC
+| opcode |  mnemonic   |
+| `0xe0` |  *LDVR*\*   |
+| `0xe1` |     -       |
+| `0xe2` |     -       |
+| `0xe3` |     -       |
+| `0xe4` |     -       |
+| `0xe5` | *LDVR (RA)* |
+| `0xe6` | *LDVR (SP)* |
+| `0xe7` | *LDVR (FP)* |
+| `0xe8` |  *STVR*\*   |
+| `0xe9` |     -       |
+| `0xea` |     -       |
+| `0xeb` |     -       |
+| `0xec` |     -       |
+| `0xed` | *STVR (RA)* |
+| `0xee` | *STVR (SP)* |
+| `0xef` | *STVR (FP)* |
 
-wobei `RET`, `LDSP` und `STSP` zu den extended op-codes gehören würden, da sie keine Argumente nehmen und `CALL`, `ADC` und alle Varianten von `LDVR` und `STVR` zu den normalen op codes gehören würden, was aber ein kleines Problem mit sich bringt: Es gibt nur 3 verbleibende Opcodes, also müsste man noch eine Kategorie an extended op-codes hinzufügen. Dafür würde sich eventuell `0x0e` anbieten.
+**\***: Intern benötigter Befehl, welcher aber nicht normal verwendbar ist, trotzdem gibt es, bzw. genau deshalb gibt es, einen zugeordneten Opcode.
+
+> Die "offizielen" opcodes für sind normal geschrieben, die "inoffiziellen" in *kursiv*. Es gibt für viele Befehle Opcodes, aber nicht unbedingt für alle, für diese wurde dann ein sinnvoller Wert gewählt.
