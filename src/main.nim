@@ -1,3 +1,4 @@
+import tables
 import streams
 import strutils
 
@@ -11,7 +12,22 @@ var options = parseOptions()
 
 echo options
 
-proc execute_vm(vmstate: VMState) =
+proc execute_vm(program: Prgm) =
+
+  var labels = initTable[string, uint]()
+
+  var buf: seq[array[3, uint8]]
+  var mem: array[1024, array[3, uint8]]
+
+  for stmt in program.lines:
+    if stmt.label != "":
+      labels[stmt.label] = stmt.line
+
+  for stmt in program.lines:
+    buf.add(bin_repr(stmt.instr, labels))
+
+  let vmstate = makeVM(buf, mem)
+
   for i in 0..vmstate.buf.len-1:
     if not(vmstate.execute()): break
 
@@ -48,9 +64,11 @@ elif options.disassemble:
   echo disassemble(stream)
 
   stream.close()
-  quit(1)
 else:
   let str = utils.read_text_file(options.filepath)
 
-  var program = parser.parse(str)
+  let program = parser.parse(str)
+
   echo program
+
+  execute_vm(program)
