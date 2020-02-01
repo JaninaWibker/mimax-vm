@@ -31,8 +31,10 @@ proc construct(instr: array[3, uint8]): uint = # redo using cast[] stuff maybe
 proc destruct(instr: uint): array[3, uint8] = # redo using cast[] stuff maybe
   [(uint8) (bitand(instr, 0x0f0000) shr 16), (uint8) (bitand(instr, 0xff00) shr 8), (uint8) bitand(instr, 0xff)]
 
-proc execute*(state: VMState) =
-
+proc execute*(state: VMState): bool =
+  if state.iar > cast[uint](len(state.buf)):
+    return false
+  
   state.ir = state.buf[state.iar] # 24-bit
   var instruction = state.ir
   echo instruction
@@ -119,7 +121,7 @@ proc execute*(state: VMState) =
 
       case instruction[0]:
         of ord(opcodes.HALT):
-          return
+          return false
         of ord(opcodes.NOT):
           state.a = bitand(bitnot(state.a), state.one)
           state.iar += 1
@@ -150,3 +152,4 @@ proc execute*(state: VMState) =
           echo "error extended-opcodes-1"
     else:
       echo "error"
+  return true

@@ -5,7 +5,6 @@ type
   mima_version* = enum
     MIMAX
     MIMA
-    MIMA_ALT
 
 type
   Options* = object
@@ -26,7 +25,6 @@ flags:
   -v, --version       Print version
   -d, --debug         Enable debugging features (breakpoints, stepping through code, ...)
   -D, --disassemble   Disassemble binary representation
-  -X, --mima          Original mima instruction set
   -A, --alt-mima      Use slightly different mima instruction set
 """
 
@@ -55,10 +53,8 @@ proc parseOptions*(): Options =
           options.debug = true
         elif value == "--disassemble":
           options.disassemble = true
-        elif value == "--mima":
-          options.mima_version = mima_version.MIMA
         elif value == "--alternative":
-          options.mima_version = mima_version.MIMA_ALT
+          options.mima_version = mima_version.MIMA
 
       elif startsWith(value, "-"):
 
@@ -76,10 +72,8 @@ proc parseOptions*(): Options =
             options.debug = true
           elif flag == 'D':
             options.disassemble = true
-          elif flag == 'X':
-            options.mima_version = mima_version.MIMA
           elif flag == 'A':
-            options.mima_version = mima_version.MIMA_ALT
+            options.mima_version = mima_version.MIMA
       
       elif key == count:
         options.filepath = value

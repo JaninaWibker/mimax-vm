@@ -22,8 +22,6 @@ proc read_binary_file*(filepath: string, version: mima_version): FileStream =
       echo "little endian system"
     elif version == mima_version.MIMA:
       discard # TODO: what to do here?
-    elif version == mima_Version.MIMA_ALT:
-      discard # TODO: what to do here?
     else:
       raise newException(IOError, "This is not a mimax binary file")
     discard

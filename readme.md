@@ -24,7 +24,6 @@ flags:
   -v, --version       Print version
   -d, --debug         Enable debugging features (breakpoints, stepping through code, ...)
   -D, --disassemble   Disassemble binary representation
-  -X, --mima          Original mima instruction set
   -A, --alt-mima      Use slightly different mima instruction set
 ```
 

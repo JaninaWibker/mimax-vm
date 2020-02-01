@@ -1,5 +1,6 @@
         ldc 7
         call %push
+        halt
 push:   stvr 0 (sp)
         ldsp
         adc 1
