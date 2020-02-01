@@ -87,7 +87,7 @@ proc prev*(lex: Lexer): Token =
 var rules = newSeq[Rule]()
 
 # mneomonics are ordered by length, this circumvents the issue that STV and STVR, ... start the same which causes everything to match STV instead of STVR
-rules.add(Rule(kind: TokenType.OPCODE,      max_length: 4, regex: re("LDIV|STIV|HALT|CALL|LDVR|STVR|LDSP|STSP|LDFP|STFP|LDRA|STRA|LDC|LDV|STV|ADD|AND|XOR|NOT|RAR|EQL|JMP|JMN|RET|ADC|OR", {reIgnoreCase})))
+rules.add(Rule(kind: TokenType.OPCODE,      max_length: 4, regex: re("LDIV|STIV|HALT|CALL|LDVR|STVR|LDSP|STSP|LDC|LDV|STV|ADD|AND|XOR|NOT|RAR|EQL|JMP|JMN|RET|ADC|OR", {reIgnoreCase})))
 rules.add(Rule(kind: TokenType.REGISTER,    max_length: 3, regex: re("IR|RA|IAR|A|ONE|SP|FP|SAR|SDR|X|Y", {reIgnoreCase})))
 rules.add(Rule(kind: TokenType.INTEGER,     max_length: 0, regex: re("[+-]?(0x[0-9a-fA-F]+|0b[01]+|[0-9]+)", {reIgnoreCase})))
 rules.add(Rule(kind: TokenType.IDENTIFIER,  max_length: 0, regex: re("[a-zA-Z_][a-zA-Z_0-9]+", {reIgnoreCase})))
