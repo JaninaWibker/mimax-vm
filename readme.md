@@ -144,7 +144,7 @@ Alle Instructions ohne Argumente teilen sich einen "*Pr√§fix*" (`0x0f`). Der Pr√
 | `0xf0` |   HALT   |
 | `0xf1` |   NOT    |
 | `0xf2` |   RAR    |
-| `0xf3` |   RET    |
+| `0xf3` |  *RET*   |
 | `0xf4` |  *LDSP*  |
 | `0xf5` |  *STSP*  |
 | `0xf6` |  *LDFP*  |
