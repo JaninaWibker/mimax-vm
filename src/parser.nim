@@ -39,8 +39,10 @@ proc parse*(input: string): Prgm =
           c_stmt.label = token.value
           state = COLON
         elif token.kind == TokenType.OPCODE:
+          # this does not work with the LDVR_* / STVR_* opcodes, therefore added LDVR/STVR as kind of intermediate
           c_instr = Instr(opcode: parseEnum[opcodes](token.value))
           state = ARGUMENTS
+          c_stmt.label = ""
         else:
           echo "error"
           state = ERROR
@@ -116,38 +118,35 @@ proc parse*(input: string): Prgm =
         if token.kind == TokenType.IDENTIFIER: 
           c_instr.args.add(Arg(kind: ArgType.LABEL, value: token.value))
           # check if more arguments are coming or a new instruction starts
-          token = lex.next()
+          token = lex.peek()
           if token.kind == TokenType.WS:
-            token = lex.peek()
-
-            if token.kind == TokenType.IDENTIFIER:
-              # save the current instruction and current statement
-              c_stmt.instr = c_instr
-              c_stmt.line = lines
-              program.lines.add(deep_copy(c_stmt)) # deep copying because c_stmt is reused
-              lines += 1
-              state = START
-              # not advancing, letting them deal with saving the identifier themselves
-            elif token.kind == TokenType.OPCODE:
-              # save the current instruction and current statement
-              c_stmt.instr = c_instr
-              c_stmt.line = lines
-              program.lines.add(deep_copy(c_stmt)) # deep copying because c_stmt is reused
-              lines += 1
-              state = OPCODE
-              # not advancing, letting them deal with saving the opcode themselves
-            elif token.kind == TokenType.PERCENTAGE:
-              state = IDENTIFIER
-              discard lex.next() # only peeked, advancing now
-            elif token.kind == TokenType.LPARAN:
-              state = REGISTER
-              discard lex.next() # only peeked, advancing now
-            else: # can basically only be integer
-              state = ARGUMENTS
-              # not advancing
-        else:
-          echo "error"
-          state = ERROR
+            token = lex.next()
+          
+          if token.kind == TokenType.IDENTIFIER:
+            # save the current instruction and current statement
+            c_stmt.instr = c_instr
+            c_stmt.line = lines
+            program.lines.add(deep_copy(c_stmt)) # deep copying because c_stmt is reused
+            lines += 1
+            state = START
+            # not advancing, letting them deal with saving the identifier themselves
+          elif token.kind == TokenType.OPCODE:
+            # save the current instruction and current statement
+            c_stmt.instr = c_instr
+            c_stmt.line = lines
+            program.lines.add(deep_copy(c_stmt)) # deep copying because c_stmt is reused
+            lines += 1
+            state = OPCODE
+            # not advancing, letting them deal with saving the opcode themselves
+          elif token.kind == TokenType.PERCENTAGE:
+            state = IDENTIFIER
+            discard lex.next() # only peeked, advancing now
+          elif token.kind == TokenType.LPARAN:
+            state = REGISTER
+            discard lex.next() # only peeked, advancing now
+          else: # can basically only be integer
+            state = ARGUMENTS
+            # not advancing
 
       of REGISTER:
         if token.kind == TokenType.REGISTER:
@@ -178,6 +177,10 @@ proc parse*(input: string): Prgm =
               c_stmt.line = lines
               program.lines.add(deep_copy(c_stmt)) # deep copying because c_stmt is reused
               lines += 1
+              # need to reset statement here as it would otherwise not be overwritten correctly as the START
+              # state is not used. This means that if no label is present the previous one might will be used.
+              c_stmt = Stmt()
+
               state = OPCODE
               # not advancing, letting them deal with saving the opcode themselves
             elif token.kind == TokenType.PERCENTAGE:

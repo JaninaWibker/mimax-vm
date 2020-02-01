@@ -61,7 +61,7 @@ proc bin_repr*(instr: Instr, labels: Table[string, uint]): array[3, uint8] =
     of opcodes.LDC, opcodes.LDV, opcodes.STV, opcodes.ADD,
        opcodes.AND, opcodes.OR,  opcodes.XOR, opcodes.EQL,
        opcodes.LDIV, opcodes.STIV, opcodes.ADC:
-      var num = parseInt(instr.args[0].value)
+      let num = parseInt(instr.args[0].value)
       bin[0] = cast[uint8](ord(instr.opcode)) # this only sets the upper 4 bits as the lower 4 bits are always 0
 
       bin[0] += bitand(cast[uint8](num shr 16), 0x7f)
@@ -72,22 +72,27 @@ proc bin_repr*(instr: Instr, labels: Table[string, uint]): array[3, uint8] =
     of opcodes.JMP, opcodes.JMN, opcodes.CALL:
       
       bin[0] = cast[uint8](ord(instr.opcode)) # this only sets the upper 4 bits as the lower 4 bits are always 0
-      var label: uint = labels[instr.args[0].value]
+      let label: uint = labels[instr.args[0].value]
       bin[0] += bitand(cast[uint8](label shr 16), 0x7f)
       bin[1] = cast[uint8](label shr 8)
       bin[2] = cast[uint8](label)
 
     # extended opcodes not followed by arguments
     of opcodes.RET, opcodes.HALT, opcodes.NOT, opcodes.RAR,
-       opcodes.LDSP, opcodes.STSP:
+       opcodes.LDSP, opcodes.STSP, opcodes.LDFP, opcodes.STFP,
+       opcodes.LDRA, opcodes.STRA:
       bin[0] = cast[uint8](ord(instr.opcode)) # this sets the whole 8 bits as the opcode already includes the extended-opcodes prefix
       bin[1] = 0
       bin[2] = 0
-    # unknown as of right now
     of opcodes.LDVR, opcodes.STVR:
-      bin[0] = 0
-      bin[1] = 0
-      bin[2] = 0
-      discard
+      let offset: uint16 = cast[uint16](parseInt(instr.args[0].value))
+      let register: registers = parseEnum[registers](instr.args[1].value)
 
+      bin[0] = cast[uint8](instr.opcode) + cast[uint8](bitand(ord(register), 7))
+      bin[1] = cast[uint8](offset shr 8)
+      bin[2] = cast[uint8](offset)
+
+    else:
+      echo "error, invalid instruction"
+    
   return bin
