@@ -1,5 +1,7 @@
 # mimax-vm
 
+![](./mima-x-logo.png =512x256)
+
 > **WIP**: Not anywhere near completion.
 
 Dies ist ein VM für die "mima-x" Architektur aus der GBI Vorlesung.
