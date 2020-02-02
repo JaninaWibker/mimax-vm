@@ -1,6 +1,6 @@
 # mimax-vm
 
-![](./mima-x-logo.png =512x256)
+<img src="./mima-x-logo.png" width="256" />
 
 > **WIP**: Not anywhere near completion.
 
