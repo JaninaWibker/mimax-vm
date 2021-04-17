@@ -85,7 +85,7 @@ proc bin_repr*(instr: Instr, labels: Table[string, uint]): array[3, uint8] =
       bin[2] = 0
     of opcodes.LDVR, opcodes.STVR:
       let offset: uint16 = cast[uint16](parseInt(instr.args[0].value))
-      let register: registers = parseEnum[registers](instr.args[1].value)
+      let register: registers = parseEnum[registers](instr.args[1].value.toUpper)
 
       bin[0] = cast[uint8](instr.opcode) + cast[uint8](bitand(ord(register), 7))
       bin[1] = cast[uint8](offset shr 8)

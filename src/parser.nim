@@ -16,6 +16,7 @@ type
     RPARAN
     ERROR
 
+# TODO: this should be able to handle input which doesn't have any whitespace before instructions
 proc parse*(input: string): Prgm =
   lex.source = splitLines(input)
 
@@ -40,7 +41,7 @@ proc parse*(input: string): Prgm =
           state = COLON
         elif token.kind == TokenType.OPCODE:
           # this does not work with the LDVR_* / STVR_* opcodes, therefore added LDVR/STVR as kind of intermediate
-          c_instr = Instr(opcode: parseEnum[opcodes](token.value))
+          c_instr = Instr(opcode: parseEnum[opcodes](token.value.toUpper))
           state = ARGUMENTS
           c_stmt.label = ""
         else:
@@ -56,7 +57,7 @@ proc parse*(input: string): Prgm =
 
       of OPCODE:
         if token.kind == TokenType.OPCODE:
-          c_instr = Instr(opcode: parseEnum[opcodes](token.value))
+          c_instr = Instr(opcode: parseEnum[opcodes](token.value.toUpper))
           state = ARGUMENTS
         else:
           echo "error"
