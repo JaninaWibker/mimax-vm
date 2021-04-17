@@ -71,8 +71,7 @@ proc bin_repr*(instr: Instr, labels: Table[string, uint]): array[3, uint8] =
     of opcodes.JMP, opcodes.JMN, opcodes.CALL:
       
       bin[0] = cast[uint8](ord(instr.opcode)) # this only sets the upper 4 bits as the lower 4 bits are always 0
-      echo instr.args[0].kind
-      echo instr.args[0].value
+      
       var label: uint
       
       if instr.args[0].kind == ArgType.INTEGER:

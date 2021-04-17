@@ -3,7 +3,7 @@ import os
 import cli # TODO: create some kind of better system than just including everything everwhere; similar to header files?
 
 proc read_binary_file*(filepath: string, version: mima_version): FileStream = 
-  if unlikely(not existsFile(filepath)):
+  if unlikely(not fileExists(filepath)):
     raise newException(IOError, "file \"{filepath}\" does not exist")
   
   let stream = newFileStream(filepath, mode = fmRead)
@@ -37,7 +37,7 @@ proc read_binary_file*(filepath: string, version: mima_version): FileStream =
 
 
 proc read_text_file*(filepath: string): string =
-  if unlikely(not existsFile(filepath)):
+  if unlikely(not fileExists(filepath)):
     raise newException(IOError, "file \"{filepath}\" does not exist")
 
   return readFile(filepath)

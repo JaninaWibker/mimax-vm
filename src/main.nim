@@ -58,9 +58,19 @@ proc bin_to_program(stream: FileStream): Prgm =
   return program
 
 
-# TODO: implement compiliation
-proc compile(program: Prgm): StringStream =
-  return newStringStream($program)
+proc compile(program: Prgm): iterator(): uint8 =
+  result = iterator(): uint8 =
+    var labels = initTable[string, uint]()
+
+    for stmt in program.lines:
+      if stmt.label != "":
+        labels[stmt.label] = stmt.line
+
+    for stmt in program.lines:
+      let bin = bin_repr(stmt.instr, labels)
+      yield bin[0]
+      yield bin[1]
+      yield bin[2]
 
 
 proc disassemble(stream: FileStream): string =
@@ -95,16 +105,17 @@ elif options.compile:
   let str = utils.read_text_file(options.filepath)
 
   let program = parser.parse(str)
-  let output_stream = compile(program)
-  let file_stream = newFileStream(options.filepath & ".bin", fmWrite)
+  let stream = newFileStream(options.filepath & ".bin", fmWrite)
 
-  while not(output_stream.atEnd()):
-    var curr: uint8
-    discard output_stream.readData(curr.addr, 1)
-    file_stream.write(curr)
+  let it = compile(program)
 
-  file_stream.close()
-  output_stream.close()
+  # write mima(x) header
+  stream.write("mimax\0")
+
+  for bit in it():
+    stream.write(bit)
+
+  stream.close()
 
 elif options.debug:
   # TODO: this should be a debugger which allows inspecting values, setting breakpoints and stepping through code
