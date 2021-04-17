@@ -1,5 +1,6 @@
 import os
 import strutils
+import strformat
 
 type
   mima_version* = enum
@@ -15,18 +16,25 @@ type
     mima_version*: mima_version
     filepath*: string
 
-const version = "0.0.1"
-const usage = """
-usage: mimax-vm <optional flags> <file>
+const bold   = "\e[1m"
+const reset  = "\e[0m"
+const white  = "\e[37m"
+const yellow = "\e[33m"
 
-flags:
-  -b, --bin           Use binary representation as input
-  -c, --compile       Compile to binary representation
-  -v, --version       Print version
-  -d, --debug         Enable debugging features (breakpoints, stepping through code, ...)
-  -D, --disassemble   Disassemble binary representation
-  -A, --alt-mima      Use slightly different mima instruction set
-"""
+const version = "0.0.1"
+const usage = fmt"""{bold}usage{reset}: {yellow}mimax-vm{reset} {white}<optional flags>{reset} {white}<file>{reset}
+
+{bold}flags{reset}:
+  {white}-b{reset}, {white}--bin{reset}           Use binary representation as input
+  {white}-c{reset}, {white}--compile{reset}       Compile to binary representation (output: <file>.bin)
+  {white}-v{reset}, {white}--version{reset}       Print version
+  {white}-d{reset}, {white}--debug{reset}         Enable debugging features (breakpoints, stepping through code, ...)
+  {white}-D{reset}, {white}--disassemble{reset}   Disassemble binary representation
+  {white}-A{reset}, {white}--alt-mima{reset}      Use slightly different mima instruction set
+
+{bold}examples{reset}:
+  {yellow}mimax-vm{reset} {white}-b{reset} {white}-d{reset} {white}test.bin.mimax{reset}
+  {yellow}mimax-vm{reset} {white}-D{reset}    {white}test.bin.mimax{reset}"""
 
 proc parseOptions*(): Options =
 
@@ -36,6 +44,7 @@ proc parseOptions*(): Options =
 
   if count == 0:
     echo usage
+    quit(0)
   elif count >= 1:
     for key in countup(1, count):
       let value = paramStr(key)
