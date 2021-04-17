@@ -71,7 +71,15 @@ proc bin_repr*(instr: Instr, labels: Table[string, uint]): array[3, uint8] =
     of opcodes.JMP, opcodes.JMN, opcodes.CALL:
       
       bin[0] = cast[uint8](ord(instr.opcode)) # this only sets the upper 4 bits as the lower 4 bits are always 0
-      let label: uint = labels[instr.args[0].value]
+      echo instr.args[0].kind
+      echo instr.args[0].value
+      var label: uint
+      
+      if instr.args[0].kind == ArgType.INTEGER:
+        label = parseUInt(instr.args[0].value)
+      else:
+        label = labels[instr.args[0].value]
+
       bin[0] += bitand(cast[uint8](label shr 16), 0x0f)
       bin[1] = cast[uint8](label shr 8)
       bin[2] = cast[uint8](label)
