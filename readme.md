@@ -1,6 +1,6 @@
 <img src="./mima-x-logo.png" width="256" alt="mimax-vm" />
 
-> **WIP**: Not anywhere near completion.
+> **WIP**: A debugger is still missing and other features are probably buggy and unfinished as well.
 
 Dies ist ein VM für die "mima-x" Architektur aus der GBI Vorlesung.
 

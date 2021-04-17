@@ -20,9 +20,10 @@ type
     x*: uint
     y*: uint
     mem: array[1024, array[3, uint8]] # technically 2^20 mb of RAM should be supported
+    running*: bool
 
 proc makeVM*(buf: seq[array[3, uint8]], mem: array[1024, array[3, uint8]]): VMState =
-  VMState(buf: buf, ir: [(uint8) 0, (uint8) 0, (uint8) 0], ra: 0, iar: 0, a: 0, one: 1, minus_one: 0x00ffffff, sp: 1, fp: 0, sar: 0, sdr: 0, x: 0, y: 0, mem: mem)
+  VMState(buf: buf, ir: [(uint8) 0, (uint8) 0, (uint8) 0], ra: 0, iar: 0, a: 0, one: 1, minus_one: 0x00ffffff, sp: 1, fp: 0, sar: 0, sdr: 0, x: 0, y: 0, mem: mem, running: true)
 
 # this could be a macro but somehow macros seem to be broken or something (at least when using static array values)
 proc construct(instr: array[3, uint8]): uint = # redo using cast[] stuff maybe
@@ -31,13 +32,14 @@ proc construct(instr: array[3, uint8]): uint = # redo using cast[] stuff maybe
 proc destruct(instr: uint): array[3, uint8] = # redo using cast[] stuff maybe
   [(uint8) (bitand(instr, 0x0f0000) shr 16), (uint8) (bitand(instr, 0xff00) shr 8), (uint8) bitand(instr, 0xff)]
 
-proc execute*(state: VMState): bool =
+proc execute*(state: VMState): VMState =
   if state.iar > cast[uint](len(state.buf)):
-    return false
+    state.running = false
+    return state
   
   state.ir = state.buf[state.iar] # 24-bit
   var instruction = state.ir
-  echo instruction
+  # echo instruction
   case cast[uint8](bitand(instruction[0], 0xf0)):
     of ord(opcodes.LDC):
       state.a = construct(instruction)
@@ -121,7 +123,8 @@ proc execute*(state: VMState): bool =
 
       case instruction[0]:
         of ord(opcodes.HALT):
-          return false
+          state.running = false
+          return state
         of ord(opcodes.NOT):
           state.a = bitand(bitnot(state.a), state.one)
           state.iar += 1
@@ -152,6 +155,5 @@ proc execute*(state: VMState): bool =
           echo "error extended-opcodes-1"
     else:
       echo "error"
-
-  echo "A:", state.a, " SP: ", state.sp, " IAR: ", state.iar
-  return true
+  state.running = true
+  return state
