@@ -1,4 +1,4 @@
-# mimax-vm
+<img src="./mima-x-logo.png" width="256" alt="mimax-vm" />
 
 > **WIP**: Not anywhere near completion.
 
