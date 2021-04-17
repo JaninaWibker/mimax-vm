@@ -84,6 +84,7 @@ proc prev*(lex: Lexer): Token =
   lex.peeked = lex.peeked + 1
   return lex.tokens[lex.tokens.len - 1 - lex.peeked]
 
+
 var rules = newSeq[Rule]()
 
 # mneomonics are ordered by length, this circumvents the issue that STV and STVR, ... start the same which causes everything to match STV instead of STVR
@@ -93,8 +94,8 @@ rules.add(Rule(kind: TokenType.INTEGER,     max_length: 0, regex: re("[+-]?(0x[0
 rules.add(Rule(kind: TokenType.IDENTIFIER,  max_length: 0, regex: re("[a-zA-Z_][a-zA-Z_0-9]+", {reIgnoreCase})))
 rules.add(Rule(kind: TokenType.WS,          max_length: 0, regex: re("(?:\t|\n|\r| |;.*|#.|--.*)+", {reIgnoreCase})))
 rules.add(Rule(kind: TokenType.COLON,       max_length: 1, regex: re(":", {reIgnoreCase})))
-rules.add(Rule(kind: TokenType.LPARAN,      max_length: 1, regex: re("\\(", {reIgnoreCase})))
-rules.add(Rule(kind: TokenType.RPARAN,      max_length: 1, regex: re("\\)", {reIgnoreCase})))
+rules.add(Rule(kind: TokenType.LPAREN,      max_length: 1, regex: re("\\(", {reIgnoreCase})))
+rules.add(Rule(kind: TokenType.RPAREN,      max_length: 1, regex: re("\\)", {reIgnoreCase})))
 rules.add(Rule(kind: TokenType.PERCENTAGE,  max_length: 1, regex: re("%", {reIgnoreCase})))
 
 # just some testing

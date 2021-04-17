@@ -63,8 +63,8 @@ type
     WS
     IDENTIFIER
     COLON
-    LPARAN
-    RPARAN
+    LPAREN
+    RPAREN
     PERCENTAGE
     EOF
     UNKNOWN
