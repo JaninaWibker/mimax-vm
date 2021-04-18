@@ -106,9 +106,25 @@ proc debug*(program: Prgm) =
   let prompt = Styler.init(fgBlue, "> ") # TODO: maybe add some kind of indicator to this for the current state ([X] where X is some kind of state maybe)
 
   # TODO: come up with a good help text
-  const usage = fmt"""helpppp
+  const usage = fmt"""The following commands are available:
+{AnsiColor.f_white}h{AnsiColor.reset},  {AnsiColor.f_white}help{AnsiColor.reset}                                   {AnsiColor.bold}|{AnsiColor.reset}  show this help menu
+{AnsiColor.f_white}q{AnsiColor.reset},  {AnsiColor.f_white}quit{AnsiColor.reset}, {AnsiColor.f_white}exit{AnsiColor.reset}                             {AnsiColor.bold}|{AnsiColor.reset}  quit (^C also works)
+{AnsiColor.f_white}i{AnsiColor.reset},  {AnsiColor.f_white}info{AnsiColor.reset}                              TODO {AnsiColor.bold}|{AnsiColor.reset}  show state of vm
+{AnsiColor.f_white}it{AnsiColor.reset}, {AnsiColor.f_white}infotoggle{AnsiColor.reset}                             {AnsiColor.bold}|{AnsiColor.reset}  toggle details
+{AnsiColor.f_white}d{AnsiColor.reset},  {AnsiColor.f_white}dis{AnsiColor.reset}                               TODO {AnsiColor.bold}|{AnsiColor.reset}  TODO
 
-  """
+{AnsiColor.f_white}s{AnsiColor.reset},  {AnsiColor.f_white}step{AnsiColor.reset}     {AnsiColor.f_yellow}<steps: uint>{AnsiColor.reset}                 {AnsiColor.bold}|{AnsiColor.reset}  step specified amount
+{AnsiColor.f_white}s{AnsiColor.reset},  {AnsiColor.f_white}step{AnsiColor.reset}                                   {AnsiColor.bold}|{AnsiColor.reset}  alias of step 1
+{AnsiColor.f_white}st{AnsiColor.reset}, {AnsiColor.f_white}stepto{AnsiColor.reset} {AnsiColor.f_yellow}<address: uint>{AnsiColor.reset}                 {AnsiColor.bold}|{AnsiColor.reset}  step to address
+{AnsiColor.f_white}e{AnsiColor.reset},  {AnsiColor.f_white}exec{AnsiColor.reset}                                   {AnsiColor.bold}|{AnsiColor.reset}  execute until a breakpoint is hit or the vm halts
+
+{AnsiColor.f_white}b{AnsiColor.reset},  {AnsiColor.f_white}break{AnsiColor.reset}    {AnsiColor.f_yellow}<address: uint>{AnsiColor.reset}               {AnsiColor.bold}|{AnsiColor.reset}  set breakpoint at address
+{AnsiColor.f_white}br{AnsiColor.reset}, {AnsiColor.f_white}breakrel{AnsiColor.reset}   {AnsiColor.f_yellow}<offset: int>{AnsiColor.reset}               {AnsiColor.bold}|{AnsiColor.reset}  set breakpoint relative from current location
+{AnsiColor.f_white}m{AnsiColor.reset},  {AnsiColor.f_white}mem{AnsiColor.reset} {AnsiColor.f_yellow}<address: uint>{AnsiColor.reset}                    {AnsiColor.bold}|{AnsiColor.reset}  inspect memory at address
+{AnsiColor.f_white}m{AnsiColor.reset},  {AnsiColor.f_white}mem{AnsiColor.reset} {AnsiColor.f_yellow}<address: uint> = <value: int>{AnsiColor.reset}     {AnsiColor.bold}|{AnsiColor.reset}  update memory at address
+{AnsiColor.f_white}r{AnsiColor.reset},  {AnsiColor.f_white}reg{AnsiColor.reset} {AnsiColor.f_yellow}<register: string>{AnsiColor.reset}                 {AnsiColor.bold}|{AnsiColor.reset}  inspect specified register
+{AnsiColor.f_white}r{AnsiColor.reset},  {AnsiColor.f_white}reg{AnsiColor.reset} {AnsiColor.f_yellow}<register: string> = <value: int>{AnsiColor.reset}  {AnsiColor.bold}|{AnsiColor.reset}  update specified register
+{AnsiColor.f_white}rs{AnsiColor.reset}, {AnsiColor.f_white}reset{AnsiColor.reset}                                  {AnsiColor.bold}|{AnsiColor.reset}  reset the state of the vm"""
 
   noise.setPrompt(prompt)
 
@@ -270,25 +286,4 @@ proc debug*(program: Prgm) =
     when promptHistory:
       discard noise.historySave(file)
 
-  # * this is how it should work:
-  # * command prompt where you can enter commands (shortened to single letters mostly; long version probably not even supported with arguments)
-  # * displaying information & general things
-  # * - h                     : print help menu (might also support "help")
-  # * - q                     : quit (might also support "quit" and "exit")
-  # * - i                     : print some information (this probably takes a lot of arguments)
-  # * - it                    : toggle printing a lot of information on or off
-  # * - d                     : disassemble (how much code is disassembled is still to be decided)
-  # * - rs                    : reset vm
-  # * stepping through code & breakpoints
-  # * - s <n: int>            : step n steps forward (bypasses breakpoints)
-  # * - s                     : alias of s 1
-  # * - st <a: int>           : step to address a (bypasses breakpoints)
-  # * - e                     : execute until a breakpoint is reached or the program HALTs
-  # * - b <a: int>            : set a breakpoint at address a
-  # * - br <n: int>           : set a breakpoint relative from the current location (+n)
-  # * accessing values
-  # * - m <a: int>            : read from memory at address a
-  # * - r <r: reg>            : read from register r
-  # * - m <a: int> = <v: int> : write v to memory at address a
-  # * - r <r: reg> = <v: int> : write v to register r
   quit(0)

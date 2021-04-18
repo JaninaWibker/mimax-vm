@@ -18,8 +18,9 @@ type
 
 type
   AnsiColor* = enum
-    bold    = "\e[1m",
-    reset   = "\e[0m",
+    bold      = "\e[1m",
+    reset     = "\e[0m",
+    f_black   = "\e[30m"
     f_red     = "\e[31m",
     f_green   = "\e[32m",
     f_yellow  = "\e[33m",
