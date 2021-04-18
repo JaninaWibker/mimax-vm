@@ -16,25 +16,32 @@ type
     mima_version*: mima_version
     filepath*: string
 
-const bold   = "\e[1m"
-const reset  = "\e[0m"
-const white  = "\e[37m"
-const yellow = "\e[33m"
+type
+  AnsiColor* = enum
+    bold    = "\e[1m",
+    reset   = "\e[0m",
+    f_red     = "\e[31m",
+    f_green   = "\e[32m",
+    f_yellow  = "\e[33m",
+    f_blue    = "\e[34m",
+    f_magenta = "\e[35m" ,
+    f_cyan    = "\e[36m",
+    f_white   = "\e[37m",
 
 const version = "0.0.1"
-const usage = fmt"""{bold}usage{reset}: {yellow}mimax-vm{reset} {white}<optional flags>{reset} {white}<file>{reset}
+const usage = fmt"""{bold}usage{reset}: {f_yellow}mimax-vm{reset} {f_white}<optional flags>{reset} {f_white}<file>{reset}
 
 {bold}flags{reset}:
-  {white}-b{reset}, {white}--bin{reset}           Use binary representation as input
-  {white}-c{reset}, {white}--compile{reset}       Compile to binary representation (output: <file>.bin)
-  {white}-v{reset}, {white}--version{reset}       Print version
-  {white}-d{reset}, {white}--debug{reset}         Enable debugging features (breakpoints, stepping through code, ...)
-  {white}-D{reset}, {white}--disassemble{reset}   Disassemble binary representation
-  {white}-A{reset}, {white}--alt-mima{reset}      Use slightly different mima instruction set
+  {f_white}-b{reset}, {f_white}--bin{reset}           Use binary representation as input
+  {f_white}-c{reset}, {f_white}--compile{reset}       Compile to binary representation (output: <file>.bin)
+  {f_white}-v{reset}, {f_white}--version{reset}       Print version
+  {f_white}-d{reset}, {f_white}--debug{reset}         Enable debugging features (breakpoints, stepping through code, ...)
+  {f_white}-D{reset}, {f_white}--disassemble{reset}   Disassemble binary representation
+  {f_white}-A{reset}, {f_white}--alt-mima{reset}      Use slightly different mima instruction set
 
 {bold}examples{reset}:
-  {yellow}mimax-vm{reset} {white}-b{reset} {white}-d{reset} {white}test.bin.mimax{reset}
-  {yellow}mimax-vm{reset} {white}-D{reset}    {white}test.bin.mimax{reset}"""
+  {f_yellow}mimax-vm{reset} {f_white}-b{reset} {f_white}-d{reset} {f_white}test.bin.mimax{reset}
+  {f_yellow}mimax-vm{reset} {f_white}-D{reset}    {f_white}test.bin.mimax{reset}"""
 
 proc parseOptions*(): Options =
 

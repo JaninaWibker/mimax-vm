@@ -1,6 +1,8 @@
 import streams
 import os
-import cli # TODO: create some kind of better system than just including everything everwhere; similar to header files?
+import strutils
+import parseutils
+from cli import mimaversion
 
 proc read_binary_file*(filepath: string, version: mima_version): FileStream = 
   if unlikely(not fileExists(filepath)):
@@ -41,3 +43,38 @@ proc read_text_file*(filepath: string): string =
     raise newException(IOError, "file \"{filepath}\" does not exist")
 
   return readFile(filepath)
+
+proc string_to_int*(input: string): int =
+  if input == "": return 0
+
+  var local_input = input
+  var is_negative = input.starts_with("-")
+
+  if is_negative:
+    local_input = input[1 .. input.len-1]
+
+  var rtn: int
+  
+  if local_input.starts_with("0x"):
+    if parseHex(local_input[2..local_input.len-1], rtn) == 0:
+      raise newException(ValueError, "Parsed (hex) integer is not valid")
+  elif local_input.starts_with("0b"):
+    if parseBin(local_input[2..local_input.len-1], rtn) == 0:
+      raise newException(ValueError, "Parsed (bin) integer is not valid")
+  elif local_input.starts_with("0"):
+    if parseOct(local_input[1..local_input.len-1], rtn) == 0:
+      raise newException(ValueError, "Parsed (oct) integer is not valid")
+  else:
+    rtn = parseInt(local_input)
+
+  if is_negative:
+    return -rtn
+  else:
+    return rtn
+
+proc string_to_uint*(input: string): uint =
+  var rtn = string_to_int(input)
+  if rtn < 0:
+    raise newException(ValueError, "Parsed integer is negative")
+  else:
+    return cast[uint](rtn)

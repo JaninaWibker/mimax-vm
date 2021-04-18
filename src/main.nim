@@ -2,12 +2,14 @@ import tables
 import streams
 import noise
 import strutils
+import strformat
+from utils import string_to_int, string_to_uint
 
 import instr
 import vm
+from cli import AnsiColor
 
-proc execute_vm*(program: Prgm) =
-
+proc make_vm*(program: Prgm): VMState =
   var labels = initTable[string, uint]()
 
   var buf: seq[array[3, uint8]]
@@ -20,15 +22,19 @@ proc execute_vm*(program: Prgm) =
   for stmt in program.lines:
     buf.add(bin_repr(stmt.instr, labels))
 
-  var vmstate = makeVM(buf, mem)
+  return makeVM(buf, mem)
 
-  echo "initial: A:", vmstate.a, " SP: ", vmstate.sp, " IAR: ", vmstate.iar
+proc execute_vm*(program: Prgm) =
+
+  var vmstate = make_vm(program)
+
+  echo fmt"A: {AnsiColor.f_blue}{vmstate.a}{AnsiColor.reset} SP: {AnsiColor.f_blue}{vmstate.sp}{AnsiColor.reset} IAR: {AnsiColor.f_blue}{vmstate.iar}{AnsiColor.reset} (initial state)"
 
   while vmstate.running:
     vmstate = vmstate.execute()
-    echo "A:", vmstate.a, " SP: ", vmstate.sp, " IAR: ", vmstate.iar
+    echo fmt"A: {AnsiColor.f_blue}{vmstate.a}{AnsiColor.reset} SP: {AnsiColor.f_blue}{vmstate.sp}{AnsiColor.reset} IAR: {AnsiColor.f_blue}{vmstate.iar}{AnsiColor.reset}"
 
-  echo "halted"
+  echo fmt"{AnsiColor.f_red}halted{AnsiColor.reset}"
 
 
 proc compile*(program: Prgm): iterator(): uint8 =
@@ -89,10 +95,20 @@ proc disassemble*(program: Prgm): string =
   for stmt in program.lines:
     result.add($stmt & '\n')
 
+
 proc debug*(program: Prgm) =
+
+  var vmstate = make_vm(program)
+
+  var breakpoints: seq[uint]
 
   var noise = Noise.init()
   let prompt = Styler.init(fgBlue, "> ") # TODO: maybe add some kind of indicator to this for the current state ([X] where X is some kind of state maybe)
+
+  # TODO: come up with a good help text
+  const usage = fmt"""helpppp
+
+  """
 
   noise.setPrompt(prompt)
 
@@ -108,16 +124,17 @@ proc debug*(program: Prgm) =
       const words = [
         "h",  "help",
         "q",  "quit",        "exit",
-        "i",  "info",        "information",
-        "it", "infotoggle",  "informationtoggle",
-        "d",  "dis",         "disassemble",
+        "i",  "info",        "information",       # TODO
+        "it", "infotoggle",  "informationtoggle", # TODO
+        "d",  "dis",         "disassemble",       # TODO
         "s",  "step",
         "st", "stepto",
         "e",  "exec",        "execute",
         "b",  "break",       "breakpoint",
         "br", "breakrel",    "breakpointrelative",
-        "m",  "mem",         "memory",
-        "r",  "reg",         "register"
+        "m",  "mem",         "memory",   # TODO
+        "r",  "reg",         "register", # TODO
+        "rs", "res",         "reset"
       ]
       for w in words:
         if w.find(text) != -1:
@@ -136,17 +153,30 @@ proc debug*(program: Prgm) =
     let command = parts[0]
     parts.delete(0)
 
-    template make_command(arg_count: int, usage: string, parts: seq[string], fn: proc(parts: seq[string]): void) =
+    proc make_command(arg_count: int, usage: string, parts: seq[string], fn: proc(parts: seq[string]): void) =
       if parts.len < arg_count:
-        echo "more arguments needed: " & usage
+        echo fmt"{AnsiColor.bold}{AnsiColor.f_red}Error{AnsiColor.reset}: more arguments needed: {AnsiColor.f_white}{usage}{AnsiColor.reset}"
       elif parts.len > arg_count:
-        echo "too little arguments: " & usage
+        echo fmt"{AnsiColor.bold}{AnsiColor.f_red}Error{AnsiColor.reset}: too little arguments: {AnsiColor.f_white}{usage}{AnsiColor.reset}"
       else:
         fn(parts)
+
+    proc breakpoint(address: int): string =
+      if address < 0:
+        return fmt"{AnsiColor.bold}{AnsiColor.f_red}Error{AnsiColor.reset}: address below zero"
+      else:
+        let idx = breakpoints.find(cast[uint](address))
+        if idx != -1:
+          breakpoints.delete(idx)
+          return fmt"{AnsiColor.bold}{AnsiColor.f_red}[-]{AnsiColor.reset} removed breakpoint at address {AnsiColor.f_blue}{address:#08X}{AnsiColor.reset}"
+        else:
+          breakpoints.add(cast[uint](address))
+          return fmt"{AnsiColor.bold}{AnsiColor.f_green}[+]{AnsiColor.reset} added breakpoint at address {AnsiColor.f_blue}{address:#08X}{AnsiColor.reset}"
+
     
     case command:
       of "h", "help":
-        echo "helppp" # TODO: come up with a good help text
+        echo usage
       of "q", "quit", "exit":
         break
       of "i", "info", "information":
@@ -155,31 +185,82 @@ proc debug*(program: Prgm) =
         echo "it"
       of "d", "dis", "disassemble":
         echo "d: " & parts.join(" ")
-      of "s", "step":
-        make_command(1, "s <steps: int>", parts, proc(args: seq[string]) =
-          echo "TODO: stepping for ", parseInt(parts[0]), " steps"
-        )
+      of "s", "step": # TODO: this should support zero arguments with default value n=1
+
+        proc step(args: seq[string]) =
+          let n = string_to_uint(args[0])
+          var i: uint = 0
+          while i < n and vmstate.running:
+            discard vmstate.execute()
+            i += 1
+          
+          if not vmstate.running:
+            echo fmt"ran for {AnsiColor.f_blue}{i}{AnsiColor.reset} step(s); now at {AnsiColor.f_blue}{vmstate.iar:#08X}{AnsiColor.reset} (halted)"
+          else:
+            echo fmt"ran for {AnsiColor.f_blue}{i}{AnsiColor.reset} step(s); now at {AnsiColor.f_blue}{vmstate.iar:#08X}{AnsiColor.reset}"
+
+        if parts.len == 0:
+          step(@["1"])
+        else:
+          make_command(1, "s <steps: int>", parts, step)
+
       of "st", "stepto":
         make_command(1, "st <address: int>", parts, proc(args: seq[string]) =
-          echo "TODO: stepping to ", parseInt(parts[0])
+
+          let address = string_to_uint(args[0])
+          var i: uint = 0
+
+          while vmstate.iar != address and vmstate.running:
+            discard vmstate.execute()
+            i += 1
+
+          if not vmstate.running:
+            echo fmt"ran for {AnsiColor.f_blue}{i}{AnsiColor.reset} step(s); now at {AnsiColor.f_blue}{vmstate.iar:#08X}{AnsiColor.reset} (halted)"
+          else:
+            echo fmt"ran for {AnsiColor.f_blue}{i}{AnsiColor.reset} step(s); now at {AnsiColor.f_blue}{vmstate.iar:#08X}{AnsiColor.reset}"
+
         )
       of "e", "exec", "execute":
-        echo "TODO: executing until next breakpoint or HALT"
+        make_command(0, "e", parts, proc(args: seq[string]) =
+
+          var i = 0
+          while vmstate.running and not breakpoints.contains(vmstate.iar):
+            discard vmstate.execute()
+            i += 1
+
+          if not vmstate.running:
+            echo fmt"ran for {AnsiColor.f_blue}{i}{AnsiColor.reset} step(s); now at {AnsiColor.f_blue}{vmstate.iar:#08X}{AnsiColor.reset} (halted)"
+          else:
+            echo fmt"ran for {AnsiColor.f_blue}{i}{AnsiColor.reset} step(s); now at {AnsiColor.f_blue}{vmstate.iar:#08X}{AnsiColor.reset} (breakpoint hit)"
+
+          )
+        
       of "b", "break", "breakpoint":
         make_command(1, "b <address: int>", parts, proc(args: seq[string]) =
-          echo "TODO: setting breakpoint at address ", parseInt(parts[0])
+
+          echo breakpoint(string_to_int(args[0]))
+
         )
       of "br", "breakrel", "breakpointrelative":
         make_command(1, "br <offset: int>", parts, proc(args: seq[string]) =
-          echo "TODO: setting relative breakpoint at ", parseInt(parts[0])
+
+          echo breakpoint(cast[int](vmstate.iar) + string_to_int(args[0]))
+          
         )
       of "m", "mem", "memory":
         echo "TODO: it's complicated m: " & parts.join(" ")
       of "r", "reg", "register":
         echo "TODO: it's complicated r: " & parts.join(" ")
+      of "rs", "res", "reset":
+        make_command(0, "rs", parts, proc(args: seq[string]) =
+
+          echo fmt"{AnsiColor.bold}{AnsiColor.f_red}VM reset{AnsiColor.reset}"
+          vmstate = make_vm(program)
+
+        )
       else:
-        echo "unknown command: " & command
-        echo "rest:            " & parts.join(" ")
+        var rest = parts.join(" ")
+        echo fmt"{AnsiColor.f_red}Error{AnsiColor.reset}: unknown command: {AnsiColor.f_blue}{command}{AnsiColor.reset} (arguments: {AnsiColor.f_blue}{rest}{AnsiColor.reset})"
         discard
 
     when promptHistory:
@@ -189,7 +270,6 @@ proc debug*(program: Prgm) =
     when promptHistory:
       discard noise.historySave(file)
 
-  # TODO: this should be a debugger which allows inspecting values, setting breakpoints and stepping through code
   # * this is how it should work:
   # * command prompt where you can enter commands (shortened to single letters mostly; long version probably not even supported with arguments)
   # * displaying information & general things
@@ -198,6 +278,7 @@ proc debug*(program: Prgm) =
   # * - i                     : print some information (this probably takes a lot of arguments)
   # * - it                    : toggle printing a lot of information on or off
   # * - d                     : disassemble (how much code is disassembled is still to be decided)
+  # * - rs                    : reset vm
   # * stepping through code & breakpoints
   # * - s <n: int>            : step n steps forward (bypasses breakpoints)
   # * - s                     : alias of s 1
