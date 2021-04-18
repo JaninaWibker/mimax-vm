@@ -1,5 +1,7 @@
 import tables
 import streams
+import noise
+import strutils
 
 import instr
 import vm
@@ -88,11 +90,111 @@ proc disassemble*(program: Prgm): string =
     result.add($stmt & '\n')
 
 proc debug*(program: Prgm) =
+
+  var noise = Noise.init()
+  let prompt = Styler.init(fgBlue, "> ") # TODO: maybe add some kind of indicator to this for the current state ([X] where X is some kind of state maybe)
+
+  noise.setPrompt(prompt)
+
+  when promptPreloadBuffer:
+    discard
+
+  when promptHistory:
+    var file = "history"
+    discard noise.historyLoad(file)
+
+  when promptCompletion:
+    proc completionHook(noise: var Noise, text: string): int =
+      const words = [
+        "h",  "help",
+        "q",  "quit",        "exit",
+        "i",  "info",        "information",
+        "it", "infotoggle",  "informationtoggle",
+        "d",  "dis",         "disassemble",
+        "s",  "step",
+        "st", "stepto",
+        "e",  "exec",        "execute",
+        "b",  "break",       "breakpoint",
+        "br", "breakrel",    "breakpointrelative",
+        "m",  "mem",         "memory",
+        "r",  "reg",         "register"
+      ]
+      for w in words:
+        if w.find(text) != -1:
+          noise.addCompletion(w)
+
+    noise.setCompletionHook(completionHook)
+
+  while true:
+    let ok = noise.readLine()
+    if not ok: break
+
+    let line = noise.getLine()
+
+    var parts = line.split(" ")
+
+    let command = parts[0]
+    parts.delete(0)
+
+    template make_command(arg_count: int, usage: string, parts: seq[string], fn: proc(parts: seq[string]): void) =
+      if parts.len < arg_count:
+        echo "more arguments needed: " & usage
+      elif parts.len > arg_count:
+        echo "too little arguments: " & usage
+      else:
+        fn(parts)
+    
+    case command:
+      of "h", "help":
+        echo "helppp" # TODO: come up with a good help text
+      of "q", "quit", "exit":
+        break
+      of "i", "info", "information":
+        echo "i: " & parts.join(" ")
+      of "it", "infotoggle", "informationtoggle":
+        echo "it"
+      of "d", "dis", "disassemble":
+        echo "d: " & parts.join(" ")
+      of "s", "step":
+        make_command(1, "s <steps: int>", parts, proc(args: seq[string]) =
+          echo "TODO: stepping for ", parseInt(parts[0]), " steps"
+        )
+      of "st", "stepto":
+        make_command(1, "st <address: int>", parts, proc(args: seq[string]) =
+          echo "TODO: stepping to ", parseInt(parts[0])
+        )
+      of "e", "exec", "execute":
+        echo "TODO: executing until next breakpoint or HALT"
+      of "b", "break", "breakpoint":
+        make_command(1, "b <address: int>", parts, proc(args: seq[string]) =
+          echo "TODO: setting breakpoint at address ", parseInt(parts[0])
+        )
+      of "br", "breakrel", "breakpointrelative":
+        make_command(1, "br <offset: int>", parts, proc(args: seq[string]) =
+          echo "TODO: setting relative breakpoint at ", parseInt(parts[0])
+        )
+      of "m", "mem", "memory":
+        echo "TODO: it's complicated m: " & parts.join(" ")
+      of "r", "reg", "register":
+        echo "TODO: it's complicated r: " & parts.join(" ")
+      else:
+        echo "unknown command: " & command
+        echo "rest:            " & parts.join(" ")
+        discard
+
+    when promptHistory:
+      if line.len > 0:
+        noise.historyAdd(line)
+
+    when promptHistory:
+      discard noise.historySave(file)
+
   # TODO: this should be a debugger which allows inspecting values, setting breakpoints and stepping through code
   # * this is how it should work:
   # * command prompt where you can enter commands (shortened to single letters mostly; long version probably not even supported with arguments)
   # * displaying information & general things
-  # * - h                     : print help menu
+  # * - h                     : print help menu (might also support "help")
+  # * - q                     : quit (might also support "quit" and "exit")
   # * - i                     : print some information (this probably takes a lot of arguments)
   # * - it                    : toggle printing a lot of information on or off
   # * - d                     : disassemble (how much code is disassembled is still to be decided)
@@ -108,6 +210,4 @@ proc debug*(program: Prgm) =
   # * - r <r: reg>            : read from register r
   # * - m <a: int> = <v: int> : write v to memory at address a
   # * - r <r: reg> = <v: int> : write v to register r
-
-  echo "not yet supported"
-  quit(1)
+  quit(0)
