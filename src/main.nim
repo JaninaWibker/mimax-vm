@@ -264,9 +264,91 @@ proc debug*(program: Prgm) =
           
         )
       of "m", "mem", "memory":
-        echo "TODO: it's complicated m: " & parts.join(" ")
+        
+        if parts.len == 1:
+          make_command(1, "m <address: int>", parts, proc(args: seq[string]) =
+            try:
+              let address = string_to_uint(args[0])
+              echo "TODO(get): ", address
+
+              if address < cast[uint](vmstate.mem.len):
+                let arr = vmstate.mem[address]
+                let value = arr[0] * 65536 + arr[1] * 256 + arr[2] * 1
+                let char_value = char(arr[0]) & char(arr[1]) & char(arr[2])
+                echo fmt"value (decimal): {AnsiColor.f_blue}{value}{AnsiColor.reset}, value (hex): {AnsiColor.f_blue}{value:#08X}{AnsiColor.reset}, value (ascii): {AnsiColor.f_blue}{char_value}{AnsiColor.reset}"
+              else:
+                let limit = vmstate.mem.len - 1
+                echo fmt"{AnsiColor.f_red}Error{AnsiColor.reset}: invalid address (limit {limit})"
+
+            except ValueError:
+              echo fmt"{AnsiColor.f_red}Error{AnsiColor.reset}: invalid syntax: {AnsiColor.f_white}m <address: int>{AnsiColor.reset}"
+          )
+        elif parts.len == 3:
+          make_command(3, "m <address: int> = <value: int>", parts, proc(args: seq[string]) =
+
+            try:
+              let address = string_to_uint(args[0])
+              let equals = args[1]
+              let value = string_to_int(args[2])
+
+              if equals != "=":
+                raise newException(ValueError, "not an equal sign")
+
+              if address >= cast[uint](vmstate.mem.len):
+                let limit = vmstate.mem.len - 1
+                echo fmt"{AnsiColor.f_red}Error{AnsiColor.reset}: invalid address (limit {limit})"
+              else:
+                echo "TODO(set): ", address, equals, value
+
+            except ValueError:
+              echo fmt"{AnsiColor.f_red}Error{AnsiColor.reset}: invalid syntax: {AnsiColor.f_white}m <address: int> = <value: int>{AnsiColor.reset}"
+
+          )
+        else:
+          echo fmt"{AnsiColor.f_red}Error{AnsiColor.reset}: incorrect number of arguments: {AnsiColor.f_white}m <address: int>{AnsiColor.reset} or {AnsiColor.f_white}m <address: int> = <value: int>{AnsiColor.reset}"
+        
       of "r", "reg", "register":
-        echo "TODO: it's complicated r: " & parts.join(" ")
+        
+        if parts.len == 1:
+          make_command(1, "r <address: int>", parts, proc(args: seq[string]) =
+
+            try:
+              let register = args[0]
+
+              # TODO: check that register has a valid value
+
+              echo "TODO(get): ", register
+
+              let value = 0
+              let char_value = ""
+
+              echo fmt"value (decimal): {AnsiColor.f_blue}{value}{AnsiColor.reset}, value (hex): {AnsiColor.f_blue}{value:#08X}{AnsiColor.reset}, value (ascii): {AnsiColor.f_blue}{char_value}{AnsiColor.reset}"
+
+            except ValueError:
+              echo fmt"{AnsiColor.f_red}Error{AnsiColor.reset}: invalid syntax: {AnsiColor.f_white}r <register: string>{AnsiColor.reset}"
+          )
+        elif parts.len == 3:
+          make_command(3, "r <register: string> = <value: int>", parts, proc(args: seq[string]) =
+
+            try:
+              let register = args[0]
+              let equals = args[1]
+              let value = string_to_int(args[2])
+
+              # TODO: check that register has a valid value
+
+              if equals != "=":
+                raise newException(ValueError, "not an equal sign")
+
+              echo "TODO(set): ", register, equals, value
+
+            except ValueError:
+              echo fmt"{AnsiColor.f_red}Error{AnsiColor.reset}: invalid syntax: {AnsiColor.f_white}r <register: string> = <value: int>{AnsiColor.reset}"
+
+          )
+        else:
+          echo fmt"{AnsiColor.f_red}Error{AnsiColor.reset}: incorrect number of arguments: {AnsiColor.f_white}r <register: string>{AnsiColor.reset} or {AnsiColor.f_white}r <register: string> = <value: int>{AnsiColor.reset}"
+
       of "rs", "res", "reset":
         make_command(0, "rs", parts, proc(args: seq[string]) =
 

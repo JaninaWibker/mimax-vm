@@ -19,7 +19,7 @@ type
     sdr*: uint
     x*: uint
     y*: uint
-    mem: array[1024, array[3, uint8]] # technically 2^20 mb of RAM should be supported
+    mem*: array[1024, array[3, uint8]] # technically 2^20 mb of RAM should be supported
     running*: bool
 
 proc makeVM*(buf: seq[array[3, uint8]], mem: array[1024, array[3, uint8]]): VMState =

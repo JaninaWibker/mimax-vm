@@ -62,7 +62,9 @@ proc string_to_int*(input: string): int =
     if parseBin(local_input[2..local_input.len-1], rtn) == 0:
       raise newException(ValueError, "Parsed (bin) integer is not valid")
   elif local_input.starts_with("0"):
-    if parseOct(local_input[1..local_input.len-1], rtn) == 0:
+    if local_input == "0":
+      result = 0
+    elif parseOct(local_input[1..local_input.len-1], rtn) == 0:
       raise newException(ValueError, "Parsed (oct) integer is not valid")
   else:
     rtn = parseInt(local_input)
