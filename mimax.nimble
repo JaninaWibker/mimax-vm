@@ -3,4 +3,4 @@ author      = "Jannik Wibker"
 description = "mimax"
 license     = "MIT"
 srcDir      = "src"
-bin         = @["cli"]
+bin         = @["mimax"]
