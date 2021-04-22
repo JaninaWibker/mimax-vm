@@ -150,11 +150,11 @@ proc debug*(program: Prgm) =
   var vmstate = make_vm(program)
 
   var breakpoints: seq[uint]
+  var verbose = false
 
   var noise = Noise.init()
   let prompt = Styler.init(fgBlue, "> ") # TODO: maybe add some kind of indicator to this for the current state ([X] where X is some kind of state maybe)
 
-  # TODO: come up with a good help text
   const usage = fmt"""The following commands are available:
 {AnsiColor.f_white}h{AnsiColor.reset},  {AnsiColor.f_white}help{AnsiColor.reset}                                   {AnsiColor.bold}|{AnsiColor.reset}  show this help menu
 {AnsiColor.f_white}q{AnsiColor.reset},  {AnsiColor.f_white}quit{AnsiColor.reset}, {AnsiColor.f_white}exit{AnsiColor.reset}                             {AnsiColor.bold}|{AnsiColor.reset}  quit (^C also works)
@@ -177,7 +177,48 @@ proc debug*(program: Prgm) =
 
   noise.setPrompt(prompt)
 
-  when promptPreloadBuffer:
+  proc one_step() =
+    if verbose:
+      let instr = text_repr(vmstate.buf[vmstate.iar])
+      echo fmt"instr: {colorful(instr)}"
+      
+      let old_state = {
+        "ra": vmstate.ra,
+        "iar": vmstate.iar,
+        "a": vmstate.a,
+        "sp": vmstate.sp,
+        "fp": vmstate.fp,
+        "sar": vmstate.sar,
+        "sdr": vmstate.sdr,
+        "x": vmstate.x,
+        "y": vmstate.y
+      }.toTable
+      discard vmstate.execute()
+      let new_state = {
+        "ra": vmstate.ra,
+        "iar": vmstate.iar,
+        "a": vmstate.a,
+        "sp": vmstate.sp,
+        "fp": vmstate.fp,
+        "sar": vmstate.sar,
+        "sdr": vmstate.sdr,
+        "x": vmstate.x,
+        "y": vmstate.y
+      }.toTable
+
+      var result = "state: "
+
+      for key, old_value in old_state:
+        let new_value = new_state[key]
+        if new_value != oldvalue:
+          result.add(fmt"{AnsiColor.f_white}{key.toUpper()}{AnsiColor.reset}: {AnsiColor.f_yellow}{old_value} -> {new_value}{AnsiColor.reset}, ")
+        else:
+          result.add(fmt"{AnsiColor.f_white}{key.toUpper()}{AnsiColor.reset}: {old_value}, ")
+      echo result[0 .. result.len-3]
+    else:
+      discard vmstate.execute()
+
+  when prompt_preload_buffer:
     discard
 
   when prompt_history:
@@ -190,7 +231,7 @@ proc debug*(program: Prgm) =
         "h",  "help",
         "q",  "quit",        "exit",
         "i",  "info",        "information",       # TODO
-        "it", "infotoggle",  "informationtoggle", # TODO
+        "it", "infotoggle",  "informationtoggle",
         "d",  "dis",         "disassemble",       # TODO
         "s",  "step",
         "st", "stepto",
@@ -247,7 +288,16 @@ proc debug*(program: Prgm) =
       of "i", "info", "information":
         echo "i: " & parts.join(" ")
       of "it", "infotoggle", "informationtoggle":
-        echo "it"
+        make_command(0, "it", parts, proc(args: seq[string]) =
+        
+          if verbose:
+            verbose = false
+            echo fmt"{AnsiColor.f_red}[-]{AnsiColor.reset} disabled verbose logging"
+          else:
+            verbose = true
+            echo fmt"{AnsiColor.f_green}[+]{AnsiColor.reset} enabled verbose logging"
+
+        )
       of "d", "dis", "disassemble":
         echo disassemble(program, true, true, cast[int](vmstate.iar))
       of "s", "step":
@@ -256,7 +306,7 @@ proc debug*(program: Prgm) =
           let n = string_to_uint(args[0])
           var i: uint = 0
           while i < n and vmstate.running:
-            discard vmstate.execute()
+            one_step()
             i += 1
           
           if not vmstate.running:
@@ -276,7 +326,7 @@ proc debug*(program: Prgm) =
           var i: uint = 0
 
           while vmstate.iar != address and vmstate.running:
-            discard vmstate.execute()
+            one_step()
             i += 1
 
           if not vmstate.running:
@@ -290,7 +340,7 @@ proc debug*(program: Prgm) =
 
           var i = 0
           while vmstate.running and not breakpoints.contains(vmstate.iar):
-            discard vmstate.execute()
+            one_step()
             i += 1
 
           if not vmstate.running:
