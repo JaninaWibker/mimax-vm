@@ -4,6 +4,8 @@ import noise
 import strutils
 import strformat
 from utils import string_to_int, string_to_uint
+from token import opcodes
+from instr import text_repr
 
 import instr
 import vm
@@ -87,13 +89,60 @@ proc program_to_bin*(program: Prgm, stream: FileStream) =
   for bit in it():
     stream.write(bit) 
 
-
-proc disassemble*(program: Prgm): string =
-  # TODO: can do a lot of improvements here like prettier output, generating labels based on what things are being CALL'ed, ...
+proc disassemble*(program: Prgm, addresses: bool, color: bool, current_position: int): string = 
   result = ""
 
-  for stmt in program.lines:
-    result.add($stmt & '\n')
+  var used_labels = init_table[string, int]()
+
+  # now search for mentioned labels
+  for i in 0..program.lines.len-1:
+    let stmt = program.lines[i]
+
+    # add known labels to the list
+    if stmt.label != "":
+      used_labels[stmt.label] = i
+
+    # add numeric labels to the list; if not numeric then it must be a known
+    # label which has either already been added or will be added sooner or later
+    if stmt.instr.opcode in [opcodes.JMP, opcodes.JMN, opcodes.CALL]:
+      let value = stmt.instr.args[0].value
+      try:
+        used_labels[value] = parse_int(value)
+      except:
+        discard
+
+  for name, address in used_labels:
+    program.lines[address].label = name
+
+  for i in 0..program.lines.len-1:
+    let stmt = program.lines[i]
+
+    # omit newline for the last iteration
+    var nl = "\n"
+    if i == program.lines.len-1:
+      nl = ""
+
+    # if current_position is set make the matching line bold (at least the address)
+    var address_color = $AnsiColor.f_yellow
+    if i == current_position:
+      address_color = $AnsiColor.f_yellow & $AnsiColor.bold
+
+    if color and addresses:
+      result.add(fmt"{address_color}{i:#06X}{AnsiColor.reset} {colorful(stmt)}" & nl)
+    elif color and not addresses:
+      result.add(colorful(stmt) & nl)
+    elif not color and addresses:
+      result.add(fmt"{i:#06X} {$stmt}" & nl)
+    elif not color and not addresses:
+      result.add($stmt & nl)
+
+  return result
+
+proc disassemble*(program: Prgm, addresses: bool, color: bool): string =
+  return disassemble(program, addresses, color, -1)
+
+proc disassemble*(program: Prgm): string =
+  return disassemble(program, true, true, -1)
 
 
 proc debug*(program: Prgm) =
@@ -200,8 +249,8 @@ proc debug*(program: Prgm) =
       of "it", "infotoggle", "informationtoggle":
         echo "it"
       of "d", "dis", "disassemble":
-        echo "d: " & parts.join(" ")
-      of "s", "step": # TODO: this should support zero arguments with default value n=1
+        echo disassemble(program, true, true, cast[int](vmstate.iar))
+      of "s", "step":
 
         proc step(args: seq[string]) =
           let n = string_to_uint(args[0])

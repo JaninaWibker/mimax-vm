@@ -1,8 +1,10 @@
 import strutils
 import bitops
 import tables
+import strformat
 
 import token
+from cli import AnsiColor
 
 type
   ArgType* = enum
@@ -42,11 +44,29 @@ proc `$`*(instr: Instr): string =
     str = str & " " & $arg
   return str
 
+proc colorful*(arg: Arg): string =
+  case arg.kind:
+    of INTEGER:   return $AnsiColor.f_blue & arg.value & $AnsiColor.reset
+    of LABEL:     return "%" & $AnsiColor.f_blue & arg.value & $AnsiColor.reset
+    of REGISTER:  return "(" & $AnsiColor.f_blue & arg.value & $AnsiColor.reset & ")"
+
+proc colorful*(instr: Instr): string =
+  var str = $AnsiColor.f_white & $instr.opcode & $AnsiColor.reset
+  for arg in instr.args:
+    str = str & " " & colorful(arg)
+  return str
+
 proc `$`*(stmt: Stmt): string =
   if stmt.label.len != 0:
-    return "$1:\t$2" % [stmt.label, $stmt.instr]
+    return fmt"{stmt.label:<8}: {stmt.instr}"
   else:
-    return "\t$1" % [$stmt.instr]
+    return "          $1" % [$stmt.instr]
+
+proc colorful*(stmt: Stmt): string =
+  if stmt.label.len != 0:
+    return fmt"{AnsiColor.f_yellow}{stmt.label:<8}{AnsiColor.reset}: {colorful(stmt.instr)}"
+  else:
+    return "          $1" % [colorful(stmt.instr)]
 
 proc `$`*(prgm: Prgm): string =
   var str = ""
