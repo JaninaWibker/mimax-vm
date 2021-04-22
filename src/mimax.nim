@@ -1,4 +1,5 @@
 import streams
+import strformat
 
 import cli
 import utils

@@ -17,7 +17,7 @@ type
     ERROR
 
 proc parse*(input: string): Prgm =
-  lex.source = splitLines(input)
+  lex.source = split_lines(input)
 
   var stack: seq[ParserState]
   var state: ParserState
@@ -26,7 +26,7 @@ proc parse*(input: string): Prgm =
     state = new_state
     # echo "new state: " & $new_state
     if new_state == ParserState.START:
-      stack.setLen(0)
+      stack.set_len(0)
     stack.add(new_state)
 
   var lines: uint = 0
@@ -36,7 +36,7 @@ proc parse*(input: string): Prgm =
   var c_stmt: Stmt
   var c_instr: Instr
 
-  while not isAtEnd(lex):
+  while not is_at_end(lex):
 
     var token = lex.next()
 
@@ -50,7 +50,7 @@ proc parse*(input: string): Prgm =
           change_state(COLON)
         elif token.kind == TokenType.OPCODE:
           # this does not work with the LDVR_* / STVR_* opcodes, therefore added LDVR/STVR as kind of intermediate
-          c_instr = Instr(opcode: parseEnum[opcodes](token.value.toUpper))
+          c_instr = Instr(opcode: parse_enum[opcodes](token.value.toUpper))
           change_state(ARGUMENTS)
           c_stmt.label = ""
         else:
@@ -66,7 +66,7 @@ proc parse*(input: string): Prgm =
 
       of OPCODE:
         if token.kind == TokenType.OPCODE:
-          c_instr = Instr(opcode: parseEnum[opcodes](token.value.toUpper))
+          c_instr = Instr(opcode: parse_enum[opcodes](token.value.toUpper))
           change_state(ARGUMENTS)
         else:
           echo "error, expected OPCODE but got " & $token.kind

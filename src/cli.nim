@@ -55,9 +55,9 @@ proc parseOptions*(): Options =
     quit(0)
   elif count >= 1:
     for key in countup(1, count):
-      let value = paramStr(key)
+      let value = param_str(key)
 
-      if startsWith(value, "--"):
+      if starts_with(value, "--"):
 
         if value == "--version":
           echo "version: ", version
@@ -73,7 +73,7 @@ proc parseOptions*(): Options =
         elif value == "--alternative":
           options.mima_version = mima_version.MIMA
 
-      elif startsWith(value, "-"):
+      elif starts_with(value, "-"):
 
         for flag in value:
           if flag == '-':

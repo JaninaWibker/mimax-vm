@@ -39,7 +39,7 @@ proc execute_vm*(program: Prgm) =
 
 proc compile*(program: Prgm): iterator(): uint8 =
   result = iterator(): uint8 =
-    var labels = initTable[string, uint]()
+    var labels = init_table[string, uint]()
 
     for stmt in program.lines:
       if stmt.label != "":
@@ -59,9 +59,9 @@ proc bin_to_program*(stream: FileStream): Prgm =
   var line: uint = 0
   var program = Prgm()
 
-  while not(stream.atEnd()):
+  while not(stream.at_end()):
     var curr: uint8
-    discard stream.readData(curr.addr, 1)
+    discard stream.read_data(curr.addr, 1)
     instr[i] = curr
     i = (i + 1) mod 3
     if i == 0:
@@ -131,12 +131,12 @@ proc debug*(program: Prgm) =
   when promptPreloadBuffer:
     discard
 
-  when promptHistory:
+  when prompt_history:
     var file = "history"
-    discard noise.historyLoad(file)
+    discard noise.history_load(file)
 
-  when promptCompletion:
-    proc completionHook(noise: var Noise, text: string): int =
+  when prompt_completion:
+    proc completion_hook(noise: var Noise, text: string): int =
       const words = [
         "h",  "help",
         "q",  "quit",        "exit",
@@ -154,15 +154,15 @@ proc debug*(program: Prgm) =
       ]
       for w in words:
         if w.find(text) != -1:
-          noise.addCompletion(w)
+          noise.add_completion(w)
 
-    noise.setCompletionHook(completionHook)
+    noise.set_completion_hook(completionHook)
 
   while true:
-    let ok = noise.readLine()
+    let ok = noise.read_line()
     if not ok: break
 
-    let line = noise.getLine()
+    let line = noise.get_line().strip()
 
     var parts = line.split(" ")
 
@@ -361,11 +361,11 @@ proc debug*(program: Prgm) =
         echo fmt"{AnsiColor.f_red}Error{AnsiColor.reset}: unknown command: {AnsiColor.f_blue}{command}{AnsiColor.reset} (arguments: {AnsiColor.f_blue}{rest}{AnsiColor.reset})"
         discard
 
-    when promptHistory:
+    when prompt_history:
       if line.len > 0:
-        noise.historyAdd(line)
+        noise.history_add(line)
 
-    when promptHistory:
-      discard noise.historySave(file)
+    when prompt_history:
+      discard noise.history_save(file)
 
   quit(0)
