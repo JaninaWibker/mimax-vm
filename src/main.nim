@@ -126,11 +126,11 @@ proc disassemble*(program: Prgm, addresses: bool, color: bool, current_position:
       address_color = $AnsiColor.f_yellow & $AnsiColor.bold
 
     if color and addresses:
-      result.add(fmt"{address_color}{i:#06X}{AnsiColor.reset} {colorful(stmt)}" & nl)
+      result.add(fmt"{address_color}{i:#08X}{AnsiColor.reset} {colorful(stmt)}" & nl)
     elif color and not addresses:
       result.add(colorful(stmt) & nl)
     elif not color and addresses:
-      result.add(fmt"{i:#06X} {$stmt}" & nl)
+      result.add(fmt"{i:#08X} {$stmt}" & nl)
     elif not color and not addresses:
       result.add($stmt & nl)
 

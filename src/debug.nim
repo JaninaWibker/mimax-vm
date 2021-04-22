@@ -19,12 +19,12 @@ proc debug*(program: Prgm) =
   var verbose = false
 
   var noise = Noise.init()
-  let prompt = Styler.init(fgBlue, "> ") # TODO: maybe add some kind of indicator to this for the current state ([X] where X is some kind of state maybe)
+  let prompt = Styler.init(fgBlue, "> ")
 
   const usage = fmt"""The following commands are available:
 {AnsiColor.f_white}h{AnsiColor.reset},  {AnsiColor.f_white}help{AnsiColor.reset}                                   {AnsiColor.bold}|{AnsiColor.reset}  show this help menu
 {AnsiColor.f_white}q{AnsiColor.reset},  {AnsiColor.f_white}quit{AnsiColor.reset}, {AnsiColor.f_white}exit{AnsiColor.reset}                             {AnsiColor.bold}|{AnsiColor.reset}  quit (^C also works)
-{AnsiColor.f_white}i{AnsiColor.reset},  {AnsiColor.f_white}info{AnsiColor.reset}                              TODO {AnsiColor.bold}|{AnsiColor.reset}  show state of vm
+{AnsiColor.f_white}i{AnsiColor.reset},  {AnsiColor.f_white}info{AnsiColor.reset}                                   {AnsiColor.bold}|{AnsiColor.reset}  show state of vm
 {AnsiColor.f_white}it{AnsiColor.reset}, {AnsiColor.f_white}infotoggle{AnsiColor.reset}                             {AnsiColor.bold}|{AnsiColor.reset}  toggle details
 {AnsiColor.f_white}d{AnsiColor.reset},  {AnsiColor.f_white}dis{AnsiColor.reset}                                    {AnsiColor.bold}|{AnsiColor.reset}  disassemble the program
 
@@ -43,6 +43,8 @@ proc debug*(program: Prgm) =
 
   noise.setPrompt(prompt)
 
+  echo "use \"$1h$2\" for help" % [$AnsiColor.f_white, $AnsiColor.reset]
+
   proc one_step() =
     if verbose:
       let instr = text_repr(vmstate.buf[vmstate.iar])
@@ -58,7 +60,7 @@ proc debug*(program: Prgm) =
         "sdr": vmstate.sdr,
         "x": vmstate.x,
         "y": vmstate.y
-      }.toTable
+      }.toOrderedTable
       discard vmstate.execute()
       let new_state = {
         "ra": vmstate.ra,
@@ -70,7 +72,7 @@ proc debug*(program: Prgm) =
         "sdr": vmstate.sdr,
         "x": vmstate.x,
         "y": vmstate.y
-      }.toTable
+      }.toOrderedTable
 
       var result = "state: "
 
@@ -96,9 +98,9 @@ proc debug*(program: Prgm) =
       const words = [
         "h",  "help",
         "q",  "quit",        "exit",
-        "i",  "info",        "information",       # TODO
+        "i",  "info",        "information",
         "it", "infotoggle",  "informationtoggle",
-        "d",  "dis",         "disassemble",       # TODO
+        "d",  "dis",         "disassemble",
         "s",  "step",
         "st", "stepto",
         "e",  "exec",        "execute",
@@ -152,7 +154,31 @@ proc debug*(program: Prgm) =
       of "q", "quit", "exit":
         break
       of "i", "info", "information":
-        echo "i: " & parts.join(" ")
+        make_command(0, "i", parts, proc(args: seq[string]) =
+
+          let instr = text_repr(vmstate.buf[vmstate.iar])
+
+          let state = {
+            "ra": vmstate.ra,
+            "iar": vmstate.iar,
+            "a": vmstate.a,
+            "sp": vmstate.sp,
+            "fp": vmstate.fp,
+            "sar": vmstate.sar,
+            "sdr": vmstate.sdr,
+            "x": vmstate.x,
+            "y": vmstate.y
+          }.toOrderedTable
+
+          var result = "state: "
+
+          for key, value in state:
+              result.add(fmt"{AnsiColor.f_white}{key.toUpper()}{AnsiColor.reset}: {AnsiColor.f_yellow}{value}{AnsiColor.reset}, ")
+
+          echo fmt"instr: {colorful(instr)}"
+          echo result[0 .. result.len-3]
+
+        )
       of "it", "infotoggle", "informationtoggle":
         make_command(0, "it", parts, proc(args: seq[string]) =
         
