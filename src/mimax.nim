@@ -6,6 +6,7 @@ import utils
 import parser
 import instr
 import main
+import debug
 
 var options = parseOptions()
 
