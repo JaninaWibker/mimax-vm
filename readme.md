@@ -2,9 +2,9 @@
 
 > **WIP**: A debugger is still missing and other features are probably buggy and unfinished as well.
 
-Dies ist ein VM für die "mima-x" Architektur aus der GBI Vorlesung.
+Dies ist ein VM für die "mima" und "mima-x" Architekturen aus den GBI und RO Vorlesungen des KIT.
 
-Die VM ist in [Nim](https://nim-lang.org) geschrieben, nicht in JavaScript wie ihr [Vorgänger](https://git.jannik.ml/mima-vm). Da Nim sowohl C/C++ als auch JavaScript als compile target hat kann man leicht verschiedene frontends für die VM bauen. Es wird eine Webversion geben, welche einem erlaubt Assembly einzugeben und dieses auszuführen und dabei den State der VM zu debuggen. Diese Features sollten auch mit der Native-compilten Version funktionieren mit etwas Gluecode.
+Die VM ist in [Nim](https://nim-lang.org) geschrieben. Da Nim sowohl C/C++ als auch JavaScript als compile target haben kann ist es leicht möglich verschiedene frontends für die VM bauen. Es wird *irgendwann vielleicht* eine Webversion geben, welche einem erlaubt MIMA assembly einzugeben, dieses auszuführen und dabei den Zustand der VM zu untersuchen.
 
 ## Compilen
 
@@ -27,11 +27,75 @@ flags:
   -A, --alt-mima      Use slightly different mima instruction set
 ```
 
+> Falls nur ein Dateiname (und optional `-b`) angegeben wird, wird die Datei ausgeführt.
+
+### Disassemble
+
+Man kann eine Binärdatei mit der `-D`-flag disassemblen.
+
+Da in der Binärdatei keine Labels abgespeichert werden wird nach allen Instruktionen die ein Label nutzen gesucht und die gefundene Addresse (Dezimal) als Label dargestellt.
+
+```sh
+./mimax-vm -D test.bin.mimax
+0x000000           LDC 7
+0x000001           CALL 3
+0x000002           HALT
+0x000003 3       : STVR 0 (SP)
+0x000004           LDSP
+0x000005           ADC 1
+0x000006           STSP
+0x000007           RET
+0x000008           LDSP
+0x000009           ADC -1
+0x00000A           STSP
+0x00000B           RET
+0x00000C           LDVR -1 (SP)
+0x00000D           RET
+```
+
+> Die `test.bin.mimax`-Datei ist eine Binärversion von `test.mimax`
+
+
+### Debugging
+
+Es gibt einen Debugger mit welchem man Stück für Stück durch ein Programm durch-steppen kann; den Zustand betrachten kann und vieles mehr.
+
+```
+./mimax-cm -d test.mimax
+use "h" for help
+> h
+The following commands are available:
+h,  help                                   |  show this help menu
+q,  quit, exit                             |  quit (^C also works)
+i,  info                                   |  show state of vm
+it, infotoggle                             |  toggle details
+d,  dis                                    |  disassemble the program
+
+s,  step     <steps: uint>                 |  step specified amount
+s,  step                                   |  alias of step 1
+st, stepto <address: uint>                 |  step to address
+e,  exec                                   |  execute until a breakpoint is hit or the vm halts
+
+b,  break    <address: uint>               |  set breakpoint at address
+br, breakrel   <offset: int>               |  set breakpoint relative from current location
+m,  mem <address: uint>                    |  inspect memory at address
+m,  mem <address: uint> = <value: int>     |  update memory at address
+r,  reg <register: string>                 |  inspect specified register
+r,  reg <register: string> = <value: int>  |  update specified register
+rs, reset                                  |  reset the state of the vm
+```
+
+### Compile
+
+Hier werden die Assembly instruktionen aus einer Textdatei in eine Binärdatei umgewandelt.
+
+Die Binärdatei wird `<input filename>.bin` heißen.
+
 ## Mima-X
 
 ### Beispielcode
 
-Programme können entweder als Binärdatei oder als Textdatei ausgeführt werden.
+Programme können entweder als Binärdatei oder als Textdatei ausgeführt werden. Für Binärdateien muss die `-b`-flag benutzt werden (`-D`-nutzt auch Binärdateien)
 
 ```x86
         ldc 7
@@ -53,11 +117,9 @@ top:    ldvr -1 (sp)  ; this loads the top-most value of the stack into the accu
         ret
 ```
 
-Die `test.bin.mimax`-Datei ist eine Binärversion von `test.mimax`
+Am besten erstellt man eine Binärdatei direkt mit mimax-vm mit der `-c`-flag (compile).
 
-Am besten erstellt man eine Binärdatei direkt mit mimax-vm mit der "-c"-flag (compile).
-
-Ansonsten kann man auch selber Binärdateien mit einem Hexeditor erstellen, nur muss man dabei immer sehr viel aufpassen keine Fehler zu machen. Was einigermaßen gut funktioniert ist eine Kombination aus [xxd](https://linux.die.net/man/1/xxd) einem Editor:
+Ansonsten kann man auch selber Binärdateien mit einem Hexeditor erstellen, nur muss man dabei immer sehr viel aufpassen keine Fehler zu machen. Was einigermaßen gut funktioniert ist eine Kombination aus [xxd](https://linux.die.net/man/1/xxd) und einem Editor:
 
 1. `cat file.bin > xxd > file` um ein hexdump einer vorhandenen Datei zu erhalten
 2. Datei mit Editor der Wahl editieren
@@ -69,7 +131,7 @@ Was wichtig bei selbsterstellten Binärdateien ist, ist dass sie den korrekten H
 
 ### Instructions
 
-Die Mima-X Instructions sind zum größtenteil einfach Mima Instructions, aber es gibt einige neue, die Mima vorher nicht hatte.
+Die Mima-X Instructions sind zum größtenteil einfach Mima Instructions, aber es gibt einige neue, die die Mima vorher nicht hatte.
 
 Alte Instructions:
 - LDC: `a = arg`
