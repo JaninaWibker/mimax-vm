@@ -30,7 +30,7 @@ type
     f_white   = "\e[37m",
 
 const version = "0.0.1"
-const usage = fmt"""{bold}usage{reset}: {f_yellow}mimax-vm{reset} {f_white}<optional flags>{reset} {f_white}<file>{reset}
+const usage = fmt"""{bold}usage{reset}: {f_yellow}mimax{reset} {f_white}<optional flags>{reset} {f_white}<file>{reset}
 
 {bold}flags{reset}:
   {f_white}-b{reset}, {f_white}--bin{reset}           Use binary representation as input
@@ -41,8 +41,8 @@ const usage = fmt"""{bold}usage{reset}: {f_yellow}mimax-vm{reset} {f_white}<opti
   {f_white}-A{reset}, {f_white}--alt-mima{reset}      Use slightly different mima instruction set
 
 {bold}examples{reset}:
-  {f_yellow}mimax-vm{reset} {f_white}-b{reset} {f_white}-d{reset} {f_white}test.bin.mimax{reset}
-  {f_yellow}mimax-vm{reset} {f_white}-D{reset}    {f_white}test.bin.mimax{reset}"""
+  {f_yellow}mimax{reset} {f_white}-b{reset} {f_white}-d{reset} {f_white}test.bin.mimax{reset}
+  {f_yellow}mimax{reset} {f_white}-D{reset}    {f_white}test.bin.mimax{reset}"""
 
 proc parseOptions*(): Options =
 
@@ -91,7 +91,7 @@ proc parseOptions*(): Options =
             options.disassemble = true
           elif flag == 'A':
             options.mima_version = mima_version.MIMA
-      
+
       elif key == count:
         options.filepath = value
       else:

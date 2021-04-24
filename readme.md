@@ -19,7 +19,7 @@ nimble build
 ## Benutzung
 
 ```
-usage: mimax-vm <optional flags> <file>
+usage: mimax <optional flags> <file>
 
 flags:
   -b, --bin           Use binary representation as input
