@@ -1,5 +1,6 @@
 import bitops
 import token
+import strutils
 
 # maybe consider using array[3, uint8]] for everything
 # This is a forum post that tries to solve the same problem I have with all that converting between uint8 and uint32
@@ -26,10 +27,10 @@ proc makeVM*(buf: seq[array[3, uint8]], mem: array[1024, array[3, uint8]]): VMSt
   VMState(buf: buf, ir: [(uint8) 0, (uint8) 0, (uint8) 0], ra: 0, iar: 0, a: 0, one: 1, minus_one: 0x00ffffff, sp: 1, fp: 0, sar: 0, sdr: 0, x: 0, y: 0, mem: mem, running: true)
 
 # this could be a macro but somehow macros seem to be broken or something (at least when using static array values)
-proc construct(instr: array[3, uint8]): uint = # redo using cast[] stuff maybe
+proc construct*(instr: array[3, uint8]): uint = # redo using cast[] stuff maybe
   return (bitand(instr[0], 0x0f) shl 16) + (instr[1] shl 8) + (instr[2])
 
-proc destruct(instr: uint): array[3, uint8] = # redo using cast[] stuff maybe
+proc destruct*(instr: uint): array[3, uint8] = # redo using cast[] stuff maybe
   [(uint8) (bitand(instr, 0x0f0000) shr 16), (uint8) (bitand(instr, 0xff00) shr 8), (uint8) bitand(instr, 0xff)]
 
 proc execute*(state: VMState): VMState =
@@ -157,3 +158,59 @@ proc execute*(state: VMState): VMState =
       echo "error"
   state.running = true
   return state
+
+proc get_reg_by_string*(vmstate: VMState, register: string): uint =
+  if register.toUpper() notin @["A", "IR", "IAR", "RA", "SP", "FP", "SAR", "SDR", "X", "Y"]:
+    raise new_exception(ValueError, "not a valid register")
+
+  result = case register:
+    of "A":
+      vmstate.a
+    of "IR":
+      construct(vmstate.ir)
+    of "IAR":
+      vmstate.iar
+    of "RA":
+      vmstate.ra
+    of "SP":
+      vmstate.sp
+    of "FP":
+      vmstate.fp
+    of "SAR":
+      vmstate.sar
+    of "SDR":
+      vmstate.sdr
+    of "X":
+      vmstate.x
+    of "Y":
+      vmstate.y
+    else:
+      raise new_exception(ValueError, "not a valid register")
+
+proc set_reg_by_string*(vmstate: VMState, register: string, value: uint) =
+  if register.toUpper() notin @["A", "IR", "IAR", "RA", "SP", "FP", "SAR", "SDR", "X", "Y"]:
+    raise new_exception(ValueError, "not a valid register")
+  
+  case register:
+    of "A":
+      vmstate.a = value
+    of "IR":
+      vmstate.ir = destruct(value)
+    of "IAR":
+      vmstate.iar = value
+    of "RA":
+      vmstate.ra = value
+    of "SP":
+      vmstate.sp = value
+    of "FP":
+      vmstate.fp = value
+    of "SAR":
+      vmstate.sar = value
+    of "SDR":
+      vmstate.sdr = value
+    of "X":
+      vmstate.x = value
+    of "Y":
+      vmstate.y = value
+    else:
+      raise new_exception(ValueError, "not a valid register")

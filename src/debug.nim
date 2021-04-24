@@ -10,42 +10,7 @@ import vm
 import instr
 from cli import AnsiColor
 
-
-proc debug*(program: Prgm) =
-
-  var vmstate = make_vm(program)
-
-  var breakpoints: seq[uint]
-  var verbose = false
-
-  var noise = Noise.init()
-  let prompt = Styler.init(fgBlue, "> ")
-
-  const usage = fmt"""The following commands are available:
-{AnsiColor.f_white}h{AnsiColor.reset},  {AnsiColor.f_white}help{AnsiColor.reset}                                   {AnsiColor.bold}|{AnsiColor.reset}  show this help menu
-{AnsiColor.f_white}q{AnsiColor.reset},  {AnsiColor.f_white}quit{AnsiColor.reset}, {AnsiColor.f_white}exit{AnsiColor.reset}                             {AnsiColor.bold}|{AnsiColor.reset}  quit (^C also works)
-{AnsiColor.f_white}i{AnsiColor.reset},  {AnsiColor.f_white}info{AnsiColor.reset}                                   {AnsiColor.bold}|{AnsiColor.reset}  show state of vm
-{AnsiColor.f_white}it{AnsiColor.reset}, {AnsiColor.f_white}infotoggle{AnsiColor.reset}                             {AnsiColor.bold}|{AnsiColor.reset}  toggle details
-{AnsiColor.f_white}d{AnsiColor.reset},  {AnsiColor.f_white}dis{AnsiColor.reset}                                    {AnsiColor.bold}|{AnsiColor.reset}  disassemble the program
-
-{AnsiColor.f_white}s{AnsiColor.reset},  {AnsiColor.f_white}step{AnsiColor.reset}     {AnsiColor.f_yellow}<steps: uint>{AnsiColor.reset}                 {AnsiColor.bold}|{AnsiColor.reset}  step specified amount
-{AnsiColor.f_white}s{AnsiColor.reset},  {AnsiColor.f_white}step{AnsiColor.reset}                                   {AnsiColor.bold}|{AnsiColor.reset}  alias of step 1
-{AnsiColor.f_white}st{AnsiColor.reset}, {AnsiColor.f_white}stepto{AnsiColor.reset} {AnsiColor.f_yellow}<address: uint>{AnsiColor.reset}                 {AnsiColor.bold}|{AnsiColor.reset}  step to address
-{AnsiColor.f_white}e{AnsiColor.reset},  {AnsiColor.f_white}exec{AnsiColor.reset}                                   {AnsiColor.bold}|{AnsiColor.reset}  execute until a breakpoint is hit or the vm halts
-
-{AnsiColor.f_white}b{AnsiColor.reset},  {AnsiColor.f_white}break{AnsiColor.reset}    {AnsiColor.f_yellow}<address: uint>{AnsiColor.reset}               {AnsiColor.bold}|{AnsiColor.reset}  set breakpoint at address
-{AnsiColor.f_white}br{AnsiColor.reset}, {AnsiColor.f_white}breakrel{AnsiColor.reset}   {AnsiColor.f_yellow}<offset: int>{AnsiColor.reset}               {AnsiColor.bold}|{AnsiColor.reset}  set breakpoint relative from current location
-{AnsiColor.f_white}m{AnsiColor.reset},  {AnsiColor.f_white}mem{AnsiColor.reset} {AnsiColor.f_yellow}<address: uint>{AnsiColor.reset}                    {AnsiColor.bold}|{AnsiColor.reset}  inspect memory at address
-{AnsiColor.f_white}m{AnsiColor.reset},  {AnsiColor.f_white}mem{AnsiColor.reset} {AnsiColor.f_yellow}<address: uint> = <value: int>{AnsiColor.reset}     {AnsiColor.bold}|{AnsiColor.reset}  update memory at address
-{AnsiColor.f_white}r{AnsiColor.reset},  {AnsiColor.f_white}reg{AnsiColor.reset} {AnsiColor.f_yellow}<register: string>{AnsiColor.reset}                 {AnsiColor.bold}|{AnsiColor.reset}  inspect specified register
-{AnsiColor.f_white}r{AnsiColor.reset},  {AnsiColor.f_white}reg{AnsiColor.reset} {AnsiColor.f_yellow}<register: string> = <value: int>{AnsiColor.reset}  {AnsiColor.bold}|{AnsiColor.reset}  update specified register
-{AnsiColor.f_white}rs{AnsiColor.reset}, {AnsiColor.f_white}reset{AnsiColor.reset}                                  {AnsiColor.bold}|{AnsiColor.reset}  reset the state of the vm"""
-
-  noise.setPrompt(prompt)
-
-  echo "use \"$1h$2\" for help" % [$AnsiColor.f_white, $AnsiColor.reset]
-
-  proc one_step() =
+proc one_step(vmstate: VMState, verbose: bool) =
     if verbose:
       let instr = text_repr(vmstate.buf[vmstate.iar])
       echo fmt"instr: {colorful(instr)}"
@@ -86,6 +51,40 @@ proc debug*(program: Prgm) =
     else:
       discard vmstate.execute()
 
+proc debug*(program: Prgm) =
+
+  var vmstate = make_vm(program)
+
+  var breakpoints: seq[uint]
+  var verbose = false
+
+  var noise = Noise.init()
+  let prompt = Styler.init(fgBlue, "> ")
+
+  const usage = fmt"""The following commands are available:
+{AnsiColor.f_white}h{AnsiColor.reset},  {AnsiColor.f_white}help{AnsiColor.reset}                                   {AnsiColor.bold}|{AnsiColor.reset}  show this help menu
+{AnsiColor.f_white}q{AnsiColor.reset},  {AnsiColor.f_white}quit{AnsiColor.reset}, {AnsiColor.f_white}exit{AnsiColor.reset}                             {AnsiColor.bold}|{AnsiColor.reset}  quit (^C also works)
+{AnsiColor.f_white}i{AnsiColor.reset},  {AnsiColor.f_white}info{AnsiColor.reset}                                   {AnsiColor.bold}|{AnsiColor.reset}  show state of vm
+{AnsiColor.f_white}it{AnsiColor.reset}, {AnsiColor.f_white}infotoggle{AnsiColor.reset}                             {AnsiColor.bold}|{AnsiColor.reset}  toggle details
+{AnsiColor.f_white}d{AnsiColor.reset},  {AnsiColor.f_white}dis{AnsiColor.reset}                                    {AnsiColor.bold}|{AnsiColor.reset}  disassemble the program
+
+{AnsiColor.f_white}s{AnsiColor.reset},  {AnsiColor.f_white}step{AnsiColor.reset}     {AnsiColor.f_yellow}<steps: uint>{AnsiColor.reset}                 {AnsiColor.bold}|{AnsiColor.reset}  step specified amount
+{AnsiColor.f_white}s{AnsiColor.reset},  {AnsiColor.f_white}step{AnsiColor.reset}                                   {AnsiColor.bold}|{AnsiColor.reset}  alias of step 1
+{AnsiColor.f_white}st{AnsiColor.reset}, {AnsiColor.f_white}stepto{AnsiColor.reset} {AnsiColor.f_yellow}<address: uint>{AnsiColor.reset}                 {AnsiColor.bold}|{AnsiColor.reset}  step to address
+{AnsiColor.f_white}e{AnsiColor.reset},  {AnsiColor.f_white}exec{AnsiColor.reset}                                   {AnsiColor.bold}|{AnsiColor.reset}  execute until a breakpoint is hit or the vm halts
+
+{AnsiColor.f_white}b{AnsiColor.reset},  {AnsiColor.f_white}break{AnsiColor.reset}    {AnsiColor.f_yellow}<address: uint>{AnsiColor.reset}               {AnsiColor.bold}|{AnsiColor.reset}  set breakpoint at address
+{AnsiColor.f_white}br{AnsiColor.reset}, {AnsiColor.f_white}breakrel{AnsiColor.reset}   {AnsiColor.f_yellow}<offset: int>{AnsiColor.reset}               {AnsiColor.bold}|{AnsiColor.reset}  set breakpoint relative from current location
+{AnsiColor.f_white}m{AnsiColor.reset},  {AnsiColor.f_white}mem{AnsiColor.reset} {AnsiColor.f_yellow}<address: uint>{AnsiColor.reset}                    {AnsiColor.bold}|{AnsiColor.reset}  inspect memory at address
+{AnsiColor.f_white}m{AnsiColor.reset},  {AnsiColor.f_white}mem{AnsiColor.reset} {AnsiColor.f_yellow}<address: uint> = <value: int>{AnsiColor.reset}     {AnsiColor.bold}|{AnsiColor.reset}  update memory at address
+{AnsiColor.f_white}r{AnsiColor.reset},  {AnsiColor.f_white}reg{AnsiColor.reset} {AnsiColor.f_yellow}<register: string>{AnsiColor.reset}                 {AnsiColor.bold}|{AnsiColor.reset}  inspect specified register
+{AnsiColor.f_white}r{AnsiColor.reset},  {AnsiColor.f_white}reg{AnsiColor.reset} {AnsiColor.f_yellow}<register: string> = <value: int>{AnsiColor.reset}  {AnsiColor.bold}|{AnsiColor.reset}  update specified register
+{AnsiColor.f_white}rs{AnsiColor.reset}, {AnsiColor.f_white}reset{AnsiColor.reset}                                  {AnsiColor.bold}|{AnsiColor.reset}  reset the state of the vm"""
+
+  noise.setPrompt(prompt)
+
+  echo "use \"$1h$2\" for help" % [$AnsiColor.f_white, $AnsiColor.reset]
+
   when prompt_preload_buffer:
     discard
 
@@ -106,8 +105,8 @@ proc debug*(program: Prgm) =
         "e",  "exec",        "execute",
         "b",  "break",       "breakpoint",
         "br", "breakrel",    "breakpointrelative",
-        "m",  "mem",         "memory",   # TODO
-        "r",  "reg",         "register", # TODO
+        "m",  "mem",         "memory",
+        "r",  "reg",         "register",
         "rs", "res",         "reset"
       ]
       for w in words:
@@ -198,7 +197,7 @@ proc debug*(program: Prgm) =
           let n = string_to_uint(args[0])
           var i: uint = 0
           while i < n and vmstate.running:
-            one_step()
+            one_step(vmstate, verbose)
             i += 1
           
           if not vmstate.running:
@@ -218,7 +217,7 @@ proc debug*(program: Prgm) =
           var i: uint = 0
 
           while vmstate.iar != address and vmstate.running:
-            one_step()
+            one_step(vmstate, verbose)
             i += 1
 
           if not vmstate.running:
@@ -232,7 +231,7 @@ proc debug*(program: Prgm) =
 
           var i = 0
           while vmstate.running and not breakpoints.contains(vmstate.iar):
-            one_step()
+            one_step(vmstate, verbose)
             i += 1
 
           if not vmstate.running:
@@ -260,19 +259,19 @@ proc debug*(program: Prgm) =
           make_command(1, "m <address: int>", parts, proc(args: seq[string]) =
             try:
               let address = string_to_uint(args[0])
-              echo "TODO(get): ", address
 
               if address < cast[uint](vmstate.mem.len):
                 let arr = vmstate.mem[address]
                 let value = arr[0] * 65536 + arr[1] * 256 + arr[2] * 1
                 let char_value = char(arr[0]) & char(arr[1]) & char(arr[2])
-                echo fmt"value (decimal): {AnsiColor.f_blue}{value}{AnsiColor.reset}, value (hex): {AnsiColor.f_blue}{value:#08X}{AnsiColor.reset}, value (ascii): {AnsiColor.f_blue}{char_value}{AnsiColor.reset}"
+                echo fmt"value (decimal): {AnsiColor.f_blue}{value}{AnsiColor.reset}, value (hex): {AnsiColor.f_blue}{value:#08X}{AnsiColor.reset}, value (ascii): '{AnsiColor.f_blue}{char_value}{AnsiColor.reset}'"
               else:
                 let limit = vmstate.mem.len - 1
                 echo fmt"{AnsiColor.f_red}Error{AnsiColor.reset}: invalid address (limit {limit})"
 
-            except ValueError:
-              echo fmt"{AnsiColor.f_red}Error{AnsiColor.reset}: invalid syntax: {AnsiColor.f_white}m <address: int>{AnsiColor.reset}"
+            except ValueError as e:
+              echo fmt"{AnsiColor.f_red}Error{AnsiColor.reset}: {AnsiColor.f_white}{e.msg}{AnsiColor.reset}"
+              echo fmt"Usage: {AnsiColor.f_white}m <address: int>{AnsiColor.reset}"
           )
         elif parts.len == 3:
           make_command(3, "m <address: int> = <value: int>", parts, proc(args: seq[string]) =
@@ -280,19 +279,23 @@ proc debug*(program: Prgm) =
             try:
               let address = string_to_uint(args[0])
               let equals = args[1]
-              let value = string_to_int(args[2])
+              let value = string_to_uint(args[2]) # TODO: this could accept ints and then do the 2c conversion on it's own
 
               if equals != "=":
-                raise newException(ValueError, "not an equal sign")
+                raise new_exception(ValueError, "not an equal sign")
 
               if address >= cast[uint](vmstate.mem.len):
                 let limit = vmstate.mem.len - 1
                 echo fmt"{AnsiColor.f_red}Error{AnsiColor.reset}: invalid address (limit {limit})"
               else:
-                echo "TODO(set): ", address, equals, value
+                let arr = destruct(cast[uint](value))
+                let value = arr[0] * 65536 + arr[1] * 256 + arr[2] * 1
+                let char_value = char(arr[0]) & char(arr[1]) & char(arr[2])
+                echo fmt"updated: value (decimal): {AnsiColor.f_blue}{value}{AnsiColor.reset}, value (hex): {AnsiColor.f_blue}{value:#08X}{AnsiColor.reset}, value (ascii): '{AnsiColor.f_blue}{char_value}{AnsiColor.reset}'"
 
-            except ValueError:
-              echo fmt"{AnsiColor.f_red}Error{AnsiColor.reset}: invalid syntax: {AnsiColor.f_white}m <address: int> = <value: int>{AnsiColor.reset}"
+            except ValueError as e:
+              echo fmt"{AnsiColor.f_red}Error{AnsiColor.reset}:{AnsiColor.f_white}{e.msg}{AnsiColor.reset}"
+              echo fmt"Usage: {AnsiColor.f_white}m <address: int> = <value: int>{AnsiColor.reset}"
 
           )
         else:
@@ -304,19 +307,15 @@ proc debug*(program: Prgm) =
           make_command(1, "r <address: int>", parts, proc(args: seq[string]) =
 
             try:
-              let register = args[0]
-
-              # TODO: check that register has a valid value
-
-              echo "TODO(get): ", register
-
-              let value = 0
-              let char_value = ""
+              let value = get_reg_by_string(vmstate, args[0])
+              let arr = destruct(cast[uint](value))
+              let char_value = char(arr[0]) & char(arr[1]) & char(arr[2])
 
               echo fmt"value (decimal): {AnsiColor.f_blue}{value}{AnsiColor.reset}, value (hex): {AnsiColor.f_blue}{value:#08X}{AnsiColor.reset}, value (ascii): {AnsiColor.f_blue}{char_value}{AnsiColor.reset}"
 
-            except ValueError:
-              echo fmt"{AnsiColor.f_red}Error{AnsiColor.reset}: invalid syntax: {AnsiColor.f_white}r <register: string>{AnsiColor.reset}"
+            except ValueError as e:
+              echo fmt"{AnsiColor.f_red}Error{AnsiColor.reset}: {AnsiColor.f_white}{e.msg}{AnsiColor.reset}"
+              echo fmt"Usage: {AnsiColor.f_white}r <register: string>{AnsiColor.reset}"
           )
         elif parts.len == 3:
           make_command(3, "r <register: string> = <value: int>", parts, proc(args: seq[string]) =
@@ -324,17 +323,21 @@ proc debug*(program: Prgm) =
             try:
               let register = args[0]
               let equals = args[1]
-              let value = string_to_int(args[2])
-
-              # TODO: check that register has a valid value
 
               if equals != "=":
-                raise newException(ValueError, "not an equal sign")
+                raise new_exception(ValueError, "not an equal sign")
 
-              echo "TODO(set): ", register, equals, value
+              let value = string_to_uint(args[2]) # TODO: this could accept ints and then do the 2c conversion on it's own
+              let arr = destruct(cast[uint](value))
+              let char_value = char(arr[0]) & char(arr[1]) & char(arr[2])
 
-            except ValueError:
-              echo fmt"{AnsiColor.f_red}Error{AnsiColor.reset}: invalid syntax: {AnsiColor.f_white}r <register: string> = <value: int>{AnsiColor.reset}"
+              set_reg_by_string(vmstate, register, value)
+
+              echo fmt"updated: value (decimal): {AnsiColor.f_blue}{value}{AnsiColor.reset}, value (hex): {AnsiColor.f_blue}{value:#08X}{AnsiColor.reset}, value (ascii): {AnsiColor.f_blue}{char_value}{AnsiColor.reset}"
+
+            except ValueError as e:
+              echo fmt"{AnsiColor.f_red}Error{AnsiColor.reset}: {AnsiColor.f_white}{e.msg}{AnsiColor.reset}"
+              echo fmt"Usage: {AnsiColor.f_white}r <register: string> = <value: int>{AnsiColor.reset}"
 
           )
         else:

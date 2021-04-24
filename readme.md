@@ -1,12 +1,15 @@
 <img src="./mima-x-logo.png" width="256" alt="mimax-vm" />
 
-> **WIP**: A debugger is still missing and other features are probably buggy and unfinished as well.
+> **WIP**: Some features are somewhat unfinished and potentially buggy.
 
 Dies ist ein VM für die "mima" und "mima-x" Architekturen aus den GBI und RO Vorlesungen des KIT.
 
 Die VM ist in [Nim](https://nim-lang.org) geschrieben. Da Nim sowohl C/C++ als auch JavaScript als compile target haben kann ist es leicht möglich verschiedene frontends für die VM bauen. Es wird *irgendwann vielleicht* eine Webversion geben, welche einem erlaubt MIMA assembly einzugeben, dieses auszuführen und dabei den Zustand der VM zu untersuchen.
 
 ## Compilen
+
+Man kann den aktuellsten [Release](https://github.com/JannikWibker/mimax-vm/releases) nutzen oder das Programm selber compilen.
+Zum compilen braucht man [nim](https://nim-lang.org/install.html).
 
 ```sh
 nimble build
