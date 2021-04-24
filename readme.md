@@ -13,7 +13,7 @@ Zum compilen braucht man [nim](https://nim-lang.org/install.html).
 
 ```sh
 nimble build
-./mimax-vm
+./mimax
 ```
 
 ## Benutzung
@@ -39,7 +39,7 @@ Man kann eine Binärdatei mit der `-D`-flag disassemblen.
 Da in der Binärdatei keine Labels abgespeichert werden wird nach allen Instruktionen die ein Label nutzen gesucht und die gefundene Addresse (Dezimal) als Label dargestellt.
 
 ```sh
-./mimax-vm -D test.bin.mimax
+./mimax -D test.bin.mimax
 0x000000           LDC 7
 0x000001           CALL 3
 0x000002           HALT
@@ -64,7 +64,7 @@ Da in der Binärdatei keine Labels abgespeichert werden wird nach allen Instrukt
 Es gibt einen Debugger mit welchem man Stück für Stück durch ein Programm durch-steppen kann; den Zustand betrachten kann und vieles mehr.
 
 ```
-./mimax-cm -d test.mimax
+./mimax -d test.mimax
 use "h" for help
 > h
 The following commands are available:
@@ -120,7 +120,7 @@ top:    ldvr -1 (sp)  ; this loads the top-most value of the stack into the accu
         ret
 ```
 
-Am besten erstellt man eine Binärdatei direkt mit mimax-vm mit der `-c`-flag (compile).
+Am besten erstellt man eine Binärdatei direkt mit mimax mit der `-c`-flag (compile).
 
 Ansonsten kann man auch selber Binärdateien mit einem Hexeditor erstellen, nur muss man dabei immer sehr viel aufpassen keine Fehler zu machen. Was einigermaßen gut funktioniert ist eine Kombination aus [xxd](https://linux.die.net/man/1/xxd) und einem Editor:
 
