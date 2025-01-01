@@ -8,7 +8,7 @@ Die VM ist in [Nim](https://nim-lang.org) geschrieben. Da Nim sowohl C/C++ als a
 
 ## Compilen
 
-Man kann den aktuellsten [Release](https://github.com/JannikWibker/mimax-vm/releases) nutzen oder das Programm selber compilen.
+Man kann den aktuellsten [Release](https://github.com/JaninaWibker/mimax-vm/releases) nutzen oder das Programm selber compilen.
 Zum compilen braucht man [nim](https://nim-lang.org/install.html).
 
 ```sh

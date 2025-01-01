@@ -1,5 +1,5 @@
 version     = "1.0.0"
-author      = "Jannik Wibker"
+author      = "Janina Wibker"
 description = "mimax"
 license     = "MIT"
 srcDir      = "src"
